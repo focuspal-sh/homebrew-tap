@@ -1,12 +1,12 @@
 class FocusGuardian < Formula
   desc "Multi-browser distraction blocker & deep work engine for macOS"
   homepage "https://github.com/ShireenAzadSyed/focus-guardian"
-  version "1.0.3"
+  version "1.0.4"
   license "MIT"
 
   if Hardware::CPU.arm?
-    url "https://github.com/ShireenAzadSyed/homebrew-focus-guardian/releases/download/v1.0.3/focus-guardian-v1.0.3-arm64.tar.gz"
-    sha256 "0b72869b61d2e2c3e5cbf1816781f323dc9812f3b03f04a32aafc3b9bdd3ad2d"
+    url "https://github.com/ShireenAzadSyed/homebrew-focus-guardian/releases/download/v1.0.4/focus-guardian-v1.0.4-arm64.tar.gz"
+    sha256 "728ca56a94d458580627e020ffcdcdda94307983eafaa1eb214487c99bd99fbb"
   end
 
   head "https://github.com/ShireenAzadSyed/focus-guardian.git", branch: "main"
