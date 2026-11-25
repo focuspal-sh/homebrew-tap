@@ -19,9 +19,9 @@ winget install Python.Python.3.12
 
 ### Option 1: 1-Line PowerShell Web Installer (Recommended)
 
-Open **PowerShell** and run:
+Open **PowerShell** and run (`irm` fetches the raw script and executes it):
 ```powershell
-iwr -useb https://raw.githubusercontent.com/focuspal-sh/homebrew-tap/main/scripts/install.ps1 | iex
+irm https://raw.githubusercontent.com/focuspal-sh/homebrew-tap/main/scripts/install.ps1 | iex
 ```
 
 **What this does automatically:**
