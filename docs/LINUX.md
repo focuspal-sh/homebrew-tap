@@ -8,20 +8,15 @@ Complete installation, background service setup, and desktop environment guide f
 
 ### Option 1: 1-Line Universal Installer (Recommended)
 ```bash
-curl -fsSL https://raw.githubusercontent.com/focuspal-sh/focuspal/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/focuspal-sh/homebrew-tap/main/scripts/install.sh | bash
 ```
 *Automatically detects systemd, installs the user service, and links `focuspal` into `/usr/local/bin`.*
 
-### Option 2: Debian / Ubuntu (.deb)
+### Option 2: Run Directly with Python
 ```bash
-sudo dpkg -i focuspal_latest_amd64.deb
-focuspal start
+python3 daemon/guardian.py
 ```
-
-### Option 3: Arch Linux (AUR)
-```bash
-yay -S focuspal
-```
+*(Requires `xdotool` on X11: `sudo apt install xdotool` or `sudo dnf install xdotool`).*
 
 ---
 

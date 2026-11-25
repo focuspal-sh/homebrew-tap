@@ -4,43 +4,82 @@ Complete installation, background service setup, and management guide for Window
 
 ---
 
+## ⚡ Prerequisites
+
+Focus Pal on Windows requires **Python 3.10+**.
+If Python is not installed yet, open PowerShell and install it in one command:
+```powershell
+winget install Python.Python.3.12
+```
+*(Or download from [python.org](https://www.python.org/downloads/) — be sure to check **"Add Python to PATH"** during setup).*
+
+---
+
 ## 🚀 Installation Options
 
-### Option 1: Windows Package Manager (Winget)
+### Option 1: 1-Line PowerShell Web Installer (Recommended)
+
+Open **PowerShell** and run:
 ```powershell
-winget install focuspal-sh.focuspal
+iwr -useb https://raw.githubusercontent.com/focuspal-sh/homebrew-tap/main/scripts/install.ps1 | iex
 ```
 
-### Option 2: 1-Line PowerShell Web Installer
-Open PowerShell as Administrator and run:
+**What this does automatically:**
+1. Installs the Windows UI Automation library (`uiautomation`).
+2. Deploys Focus Pal files to `%LOCALAPPDATA%\FocusPal`.
+3. Adds the `focuspal` CLI command to your user PATH.
+4. Creates a Windows Task Scheduler task (`FocusPalDaemon`) to run 24/7 in the background on startup.
+5. Starts the background service immediately.
+
+---
+
+### Option 2: Run Directly from Cloned Repository
+
+If you cloned or downloaded the Focus Pal repository:
+
 ```powershell
-iwr -useb https://raw.githubusercontent.com/focuspal-sh/focuspal/main/install.ps1 | iex
+# 1. Navigate to the repository
+cd focus-guardian
+
+# 2. Run the Windows installer script
+powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
 ```
 
-### Option 3: Manual Git / Python Setup
+---
+
+### Option 3: Manual Minimal Python Run (No installer)
+
+If you just want to run Focus Pal immediately without any installation:
+
 ```powershell
-git clone https://github.com/focuspal-sh/focuspal.git
-cd focuspal
-python -m pip install -r requirements-windows.txt
-python daemon/guardian.py
+# 1. Install UI Automation dependency
+pip install uiautomation
+
+# 2. Run in the foreground (watch live terminal logs)
+python daemon\guardian.py --foreground
+
+# Or run silently in the background (no console window)
+pythonw daemon\guardian.py
 ```
 
 ---
 
 ## 🛠️ Management Commands
 
+Once installed, use `focuspal` directly from any PowerShell or Command Prompt:
+
 ```powershell
-# Check background service status
+# Check background service health & status
 focuspal status
+
+# Test in interactive console mode (view live interceptions)
+focuspal test
 
 # Hot-reload configuration and safe harbor rules
 focuspal reload
 
 # Start background service
 focuspal start
-
-# Run in foreground console mode to watch intercepts live
-focuspal test
 
 # Stop background service
 focuspal stop
@@ -57,21 +96,26 @@ Focus Pal operates natively at the Windows OS layer without browser extensions a
 * **Opera & Opera GX**
 * **Vivaldi**
 * **Mozilla Firefox**
+* **Arc for Windows**
 
 ---
 
-## ⚙️ How it Works on Windows
+## ⚙️ How it Works on Windows (Zero Pop-ups)
 
-1. **Active Window Title Introspection (`0% CPU`):**
-   Uses `GetForegroundWindow` and `GetWindowTextW` from `user32.dll` to inspect foreground tab titles instantaneously.
-2. **Address Bar Verification (UI Automation):**
-   Connects to the Windows UI Automation accessibility tree (`UIAutomationCore.dll`) to verify exact URL paths without needing extensions.
-3. **Tab Redirection & Tab Close:**
-   Updates the address bar value pattern to `http://127.0.0.1:8989/blocked` and injects `VK_RETURN`, or sends `Ctrl + W` to close distraction tabs.
+Unlike macOS, Windows does **not** prompt the user with permission dialogs:
+1. **Window Introspection (`0% CPU`):**
+   Uses native Win32 APIs (`GetForegroundWindow` and `GetWindowTextW` from `user32.dll`) to detect active browser windows instantaneously with zero user prompts.
+2. **Address Bar URL Verification (UI Automation):**
+   Connects to the native Windows UI Automation accessibility tree (`UIAutomationCore.dll`) to verify exact URL paths without requiring any browser extensions.
+3. **Tab Redirection:**
+   Directs distraction tabs to the local calm reflection page at `http://127.0.0.1:8989/blocked`.
 
 ---
 
-## 🛡️ Anti-Tamper Protection
+## 🗑️ Uninstallation
 
-On Windows, Focus Pal can register as a Windows Service running under the `NT AUTHORITY\SYSTEM` service account. Standard user accounts in Task Manager cannot terminate protected system processes without administrator credentials.
-
+To remove Focus Pal from Windows at any time:
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1 -Uninstall
+```
+*(Or remove the `FocusPalDaemon` task in Windows Task Scheduler and delete `%LOCALAPPDATA%\FocusPal`).*
