@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>PayloadDisplayName</key>
+    <string>Focus Pal - Silent Browser Automation</string>
+    <key>PayloadIdentifier</key>
+    <string>com.focuspal.tcc.automation</string>
+    <key>PayloadOrganization</key>
+    <string>Focus Pal</string>
+    <key>PayloadType</key>
+    <string>Configuration</string>
+    <key>PayloadUUID</key>
+    <string>B4C2A3D1-E8F9-4C5A-9D2E-1F3A4B5C6D7E</string>
+    <key>PayloadVersion</key>
+    <integer>1</integer>
+    <key>PayloadContent</key>
+    <array>
+        <dict>
+            <key>PayloadType</key>
+            <string>com.apple.TCC.configuration-profile-policy</string>
+            <key>PayloadIdentifier</key>
+            <string>com.focuspal.tcc.policy</string>
+            <key>PayloadUUID</key>
+            <string>A1B2C3D4-E5F6-4A7B-8C9D-0E1F2A3B4C5D</string>
+            <key>PayloadVersion</key>
+            <integer>1</integer>
+            <key>Services</key>
+            <dict>
+                <key>AppleEvents</key>
+                <array>
+                    <!-- Google Chrome -->
+                    <dict>
+                        <key>Identifier</key>
+                        <string>/usr/local/bin/focuspal-engine</string>
+                        <key>IdentifierType</key>
+                        <string>path</string>
+                        <key>CodeRequirement</key>
+                        <string>identifier "com.focuspal.engine" or identifier "focuspal-engine"</string>
+                        <key>AEReceiverIdentifier</key>
+                        <string>com.google.Chrome</string>
+                        <key>AEReceiverIdentifierType</key>
+                        <string>bundleID</string>
+                        <key>AEReceiverCodeRequirement</key>
+                        <string>identifier "com.google.Chrome" and anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = EQHXZ8M8AV</string>
+                        <key>Allowed</key>
+                        <true/>
+                    </dict>
+                    <!-- Apple Safari -->
+                    <dict>
+                        <key>Identifier</key>
+                        <string>/usr/local/bin/focuspal-engine</string>
+                        <key>IdentifierType</key>
+                        <string>path</string>
+                        <key>CodeRequirement</key>
+                        <string>identifier "com.focuspal.engine" or identifier "focuspal-engine"</string>
+                        <key>AEReceiverIdentifier</key>
+                        <string>com.apple.Safari</string>
+                        <key>AEReceiverIdentifierType</key>
+                        <string>bundleID</string>
+                        <key>AEReceiverCodeRequirement</key>
+                        <string>identifier "com.apple.Safari" and anchor apple</string>
+                        <key>Allowed</key>
+                        <true/>
+                    </dict>
+                    <!-- Arc Browser -->
+                    <dict>
+                        <key>Identifier</key>
+                        <string>/usr/local/bin/focuspal-engine</string>
+                        <key>IdentifierType</key>
+                        <string>path</string>
+                        <key>CodeRequirement</key>
+                        <string>identifier "com.focuspal.engine" or identifier "focuspal-engine"</string>
+                        <key>AEReceiverIdentifier</key>
+                        <string>company.thebrowser.Browser</string>
+                        <key>AEReceiverIdentifierType</key>
+                        <string>bundleID</string>
+                        <key>AEReceiverCodeRequirement</key>
+                        <string>anchor apple generic and identifier "company.thebrowser.Browser" and (certificate leaf[field.1.2.840.113635.100.6.1.9] /* exists */ or certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = S6N382Y83G)</string>
+                        <key>Allowed</key>
+                        <true/>
+                    </dict>
+                    <!-- Brave Browser -->
+                    <dict>
+                        <key>Identifier</key>
+                        <string>/usr/local/bin/focuspal-engine</string>
+                        <key>IdentifierType</key>
+                        <string>path</string>
+                        <key>CodeRequirement</key>
+                        <string>identifier "com.focuspal.engine" or identifier "focuspal-engine"</string>
+                        <key>AEReceiverIdentifier</key>
+                        <string>com.brave.Browser</string>
+                        <key>AEReceiverIdentifierType</key>
+                        <string>bundleID</string>
+                        <key>AEReceiverCodeRequirement</key>
+                        <string>identifier "com.brave.Browser" and anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = KL8N8XSYF4</string>
+                        <key>Allowed</key>
+                        <true/>
+                    </dict>
+                    <!-- Microsoft Edge -->
+                    <dict>
+                        <key>Identifier</key>
+                        <string>/usr/local/bin/focuspal-engine</string>
+                        <key>IdentifierType</key>
+                        <string>path</string>
+                        <key>CodeRequirement</key>
+                        <string>identifier "com.focuspal.engine" or identifier "focuspal-engine"</string>
+                        <key>AEReceiverIdentifier</key>
+                        <string>com.microsoft.edgemac</string>
+                        <key>AEReceiverIdentifierType</key>
+                        <string>bundleID</string>
+                        <key>AEReceiverCodeRequirement</key>
+                        <string>identifier "com.microsoft.edgemac" and anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = UBF8T346G9</string>
+                        <key>Allowed</key>
+                        <true/>
+                    </dict>
+                    <!-- System Events -->
+                    <dict>
+                        <key>Identifier</key>
+                        <string>/usr/local/bin/focuspal-engine</string>
+                        <key>IdentifierType</key>
+                        <string>path</string>
+                        <key>CodeRequirement</key>
+                        <string>identifier "com.focuspal.engine" or identifier "focuspal-engine"</string>
+                        <key>AEReceiverIdentifier</key>
+                        <string>com.apple.systemevents</string>
+                        <key>AEReceiverIdentifierType</key>
+                        <string>bundleID</string>
+                        <key>AEReceiverCodeRequirement</key>
+                        <string>identifier "com.apple.systemevents" and anchor apple</string>
+                        <key>Allowed</key>
+                        <true/>
+                    </dict>
+                </array>
+            </dict>
+        </dict>
+    </array>
+</dict>
+</plist>

@@ -1,0 +1,70 @@
+#!/bin/bash
+# Focus Pal CLI - Robust Symlink Resolution
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do
+  DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+BIN_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+PROJECT_DIR="$(cd -P "$BIN_DIR/.." && pwd)"
+
+# Resolve script directory:
+# 1. Local Git workspace / source repository
+# 2. Homebrew libexec install
+# 3. Enterprise PKG install (/Library/Application Support/FocusPal/scripts)
+if [ -d "$PROJECT_DIR/scripts" ]; then
+  SCRIPTS_DIR="$PROJECT_DIR/scripts"
+elif [ -d "/Library/Application Support/FocusPal/scripts" ]; then
+  SCRIPTS_DIR="/Library/Application Support/FocusPal/scripts"
+elif [ -d "/usr/local/share/focuspal/scripts" ]; then
+  SCRIPTS_DIR="/usr/local/share/focuspal/scripts"
+else
+  SCRIPTS_DIR="$PROJECT_DIR/scripts"
+fi
+
+case "$1" in
+  status)
+    exec "$SCRIPTS_DIR/status.sh"
+    ;;
+  permissions|perms|check)
+    shift
+    exec "$SCRIPTS_DIR/verify-permissions.sh" "$@"
+    ;;
+  install)
+    exec "$SCRIPTS_DIR/install.sh"
+    ;;
+  reload)
+    exec "$SCRIPTS_DIR/reload.sh"
+    ;;
+  start)
+    shift
+    exec "$SCRIPTS_DIR/start.sh" "$@"
+    ;;
+  test)
+    exec "$SCRIPTS_DIR/start.sh" --foreground
+    ;;
+  install-root)
+    exec sudo "$SCRIPTS_DIR/install-root-daemon.sh"
+    ;;
+  stop|uninstall)
+    exec "$SCRIPTS_DIR/uninstall.sh"
+    ;;
+  *)
+    echo "=========================================================="
+    echo " 🤝  Focus Pal CLI"
+    echo "=========================================================="
+    echo "Usage: focuspal {status|start|test|reload|permissions|install|install-root|stop}"
+    echo ""
+    echo "  start        Start 24/7 background service (detached, immune to Ctrl+C)"
+    echo "  test         Run in foreground test mode (view live terminal logs)"
+    echo "  status       Check background daemon and reflection server"
+    echo "  permissions  Verify and request macOS Automation & notification permissions"
+    echo "  install      Register with macOS launchd for automatic startup"
+    echo "  reload       Trigger in-place hot reload of rules and code"
+    echo "  install-root Lock daemon with root privileges (tamper-proof)"
+    echo "  stop         Attempt shutdown (triggers commitment confirmation)"
+    echo "=========================================================="
+    ;;
+esac
+

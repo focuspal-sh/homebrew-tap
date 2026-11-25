@@ -1,0 +1,46 @@
+{
+  "server": {
+    "host": "127.0.0.1",
+    "port": 8989
+  },
+  "daemon": {
+    "mode": "balanced",
+    "check_interval_seconds": 0.5,
+    "block_all_shorts": true,
+    "auto_close_delay_seconds": 0,
+    "custom_browsers": []
+  },
+  "category_policies": {
+    "gaming_and_esports": "block",
+    "entertainment_and_video": "block",
+    "social_media_and_messaging": "block",
+    "shopping_and_ecommerce": "allow",
+    "news_and_current_affairs": "allow",
+    "programming_and_development": "allow",
+    "education_and_learning": "allow",
+    "science_and_research": "allow",
+    "documentation_and_reference": "allow",
+    "finance_and_business": "allow",
+    "career_and_professional": "allow",
+    "other_general": "allow"
+  },
+  "pass_system": {
+    "enabled": true,
+    "daily_pass_limit": 2,
+    "available_durations_minutes": [
+      5,
+      10
+    ],
+    "early_seal_refund_threshold_minutes": 3,
+    "cooldown_between_passes_minutes": 15
+  },
+  "lock": {
+    "enabled": true,
+    "prevent_tamper": true
+  },
+  "custom_rules": {
+    "custom_blocked_domains": [],
+    "channel_whitelist": [],
+    "channel_blacklist": []
+  }
+}

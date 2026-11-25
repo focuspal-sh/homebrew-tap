@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- MANDATORY: Declare support for both light and dark themes -->
+  <meta name="color-scheme" content="light dark">
+  <script>
+    // Inline script strictly for FOUC prevention before first paint
+    try {
+      const savedScheme = localStorage.getItem("color-scheme");
+      if (savedScheme) {
+        document.querySelector('meta[name="color-scheme"]').content = savedScheme;
+      }
+    } catch (e) { }
+  </script>
+  <title>Focus Pal | Return to Your Purpose</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+</head>
+
+<body data-focus-mode="universal">
+  <div class="guardian-viewport">
+
+    <!-- Top Bar: Brand Wordmark, Centered Mode Segmented Switcher & Controls -->
+    <header class="guardian-topbar" role="banner">
+      <!-- Left: Logo & Wordmark -->
+      <div class="brand-group">
+        <div class="brand-logo-shield" aria-hidden="true">
+          <svg width="28" height="32" viewBox="0 0 28 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M14 0L27 5.5V15C27 23.5 19.5 29.5 14 32C8.5 29.5 1 23.5 1 15V5.5L14 0Z" fill="#F59E0B" />
+            <path d="M14 4L23.5 8V15C23.5 21.5 18 26.2 14 28.5C10 26.2 4.5 21.5 4.5 15V8L14 4Z" fill="#FBBF24" />
+            <path d="M14 10V22M14 22L9 17M14 22L19 17" stroke="#1E293B" stroke-width="2.6" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+        </div>
+        <div class="brand-name-stack">
+          <span class="brand-line-1">🔒</span>
+          <span class="brand-line-2">Focus Pal</span>
+        </div>
+      </div>
+
+      <!-- Center: Segmented Mode Pill Switcher (Default: Deep Focus, Secondary: Spiritual) -->
+      <nav class="persona-switch" role="tablist" aria-label="Reflection Mode Switcher">
+        <button type="button" class="persona-tab active" id="modeUniversalBtn" role="tab" aria-selected="true"
+          title="Deep focus: Stoic time philosophy, habit systems & deep work">
+          <span class="tab-icon" aria-hidden="true">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+              <polyline points="2 17 12 22 22 17"></polyline>
+              <polyline points="2 12 12 17 22 12"></polyline>
+            </svg>
+          </span>
+          <span class="tab-label">Deep Focus</span>
+        </button>
+        <button type="button" class="persona-tab" id="modeIslamicBtn" role="tab" aria-selected="false"
+          title="Spiritual reflection: Quranic wisdom, Hadith & Dhikr">
+          <span class="tab-icon" aria-hidden="true">🌙</span>
+          <span class="tab-label">Spiritual Reminder</span>
+        </button>
+      </nav>
+
+      <!-- Right: Target Session Badge & Theme Toggle -->
+      <div class="topbar-actions">
+        <div class="target-session-pill" id="targetSessionPill" title="Target Session State">
+          <svg class="target-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <circle cx="12" cy="12" r="6"></circle>
+            <circle cx="12" cy="12" r="2"></circle>
+          </svg>
+          <span class="target-label" id="targetSessionLabel">Deep Focus</span>
+        </div>
+        <button type="button" class="btn-theme-toggle" id="themeToggleBtn" title="Toggle Light / Dark mode"
+          aria-label="Toggle theme">
+            <!-- Light Mode: Bulb Icon -->
+            <svg class="theme-icon theme-icon-bulb" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
+              aria-hidden="true">
+              <path
+                d="M12 2a6 6 0 0 0-6 6c0 2.22 1.21 4.16 3 5.2V17a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-3.8c1.79-1.04 3-2.98 3-5.2a6 6 0 0 0-6-6z">
+              </path>
+              <line x1="9" y1="21" x2="15" y2="21"></line>
+            </svg>
+            <!-- Dark Mode: Half / Crescent Moon Icon -->
+            <svg class="theme-icon theme-icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
+              aria-hidden="true">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Dual-Column Content Grid (Locked Strictly to 100dvh) -->
+    <main class="guardian-grid" role="main">
+
+      <!-- LEFT COLUMN: The Reflection Mirror -->
+      <section class="column-left" aria-label="Mindful Reflection">
+        <div class="hero-header-block">
+          <span class="hero-eyebrow">A MOMENT TO REFOCUS</span>
+          <h1 class="hero-title">This seems like a distraction.</h1>
+          <p class="hero-subtitle">You were in a focus session. Let's pause, reset, and get back to what matters.</p>
+        </div>
+
+        <!-- 1. Universal / Deep Focus Perspective (Default) -->
+        <div id="universalLeftGroup" class="mode-view mode-universal-view">
+          <!-- Philosophy Reflection Card (Typography-focused, no image) -->
+          <article class="reflection-card quran-card universal-card" aria-label="Time & Philosophy">
+            <div class="card-rule-header">
+              <span class="rule-line"></span>
+              <span class="card-rule-title" id="universalHeader">TIME & PURPOSE • ON THE SHORTNESS OF LIFE</span>
+              <span class="rule-line"></span>
+            </div>
+
+            <div class="universal-quote-wrap">
+              <h2 class="universal-quote-text" id="universalQuoteText">
+                "It is not that we have a short time to live, but that we waste a lot of it."
+              </h2>
+            </div>
+
+            <p class="universal-author-tag" id="universalQuoteAuthor">
+              — Seneca (Letters from a Stoic)
+            </p>
+            <p class="universal-context-desc" id="universalQuoteContext">
+              Time is your single non-renewable asset. You cannot purchase yesterday back, but you own this present
+              moment.
+            </p>
+          </article>
+
+          <!-- Deep Work Discipline Card -->
+          <article class="reflection-card wisdom-card" aria-label="Deep Work Discipline">
+            <div class="wisdom-header">
+              <span class="wisdom-icon" aria-hidden="true">⚡</span>
+              <span class="wisdom-tag" id="stoicBadge">DEEP WORK & DISCIPLINE</span>
+            </div>
+            <blockquote class="wisdom-quote" id="stoicQuoteText">
+              "You do not rise to the level of your goals. You fall to the level of your systems."
+            </blockquote>
+            <cite class="wisdom-author" id="stoicQuoteAuthor">
+              — James Clear (Atomic Habits)
+            </cite>
+          </article>
+        </div>
+
+        <!-- 2. Spiritual / Religious Perspective (Secondary / Optional) -->
+        <div id="islamicLeftGroup" class="mode-view mode-islamic-view" style="display: none;">
+          <!-- Quranic Reminder Card with Mosque Sunset Silhouette -->
+          <article class="reflection-card quran-card" aria-label="Quranic Reminder">
+            <div class="card-rule-header">
+              <span class="rule-line"></span>
+              <span class="card-rule-title" id="verseRef">QURANIC REMINDER • SURAH AL-ASR (103:1-3)</span>
+              <span class="rule-line"></span>
+            </div>
+
+            <div class="arabic-verse-wrap">
+              <h2 class="arabic-verse" id="verseArabic" lang="ar" dir="rtl">
+                وَالْعَصْرِ ۝ إِنَّ الْإِنسَانَ لَفِي خُسْرٍ ۝ إِلَّا الَّذِينَ آمَنُوا وَعَمِلُوا الصَّالِحَاتِ
+                وَتَوَاصَوْا بِالْحَقِّ وَتَوَاصَوْا بِالصَّبْرِ
+              </h2>
+            </div>
+
+            <p class="verse-translation" id="verseTrans">
+              "By time, indeed, mankind is in loss, except for those who believe, do righteous deeds, and advise each
+              other to truth and patience."
+            </p>
+
+            <!-- Authentic Crystal-Clear Mosques Landscape Art (Light & Dark Mode) -->
+            <div class="quran-landscape-art" aria-hidden="true">
+              <img src="/static/mosque_light.jpg" alt="Mosque silhouette at sunset"
+                class="landscape-img landscape-img-light" />
+              <img src="/static/mosque_dark.jpg" alt="Mosque silhouette at sunset"
+                class="landscape-img landscape-img-dark" />
+            </div>
+          </article>
+
+          <!-- Prophetic Wisdom Card -->
+          <article class="reflection-card wisdom-card" aria-label="Prophetic Wisdom">
+            <div class="wisdom-header">
+              <span class="wisdom-icon" aria-hidden="true">📖</span>
+              <span class="wisdom-tag">PROPHETIC WISDOM</span>
+            </div>
+            <blockquote class="wisdom-quote" id="hadithText">
+              "There are two blessings which many people waste: health and free time."
+            </blockquote>
+            <cite class="wisdom-author" id="hadithSource">
+              — Prophet Muhammad ﷺ (Sahih al-Bukhari 6412)
+            </cite>
+          </article>
+        </div>
+
+      </section>
+
+      <!-- RIGHT COLUMN: Blocked Content & Actions Deck -->
+      <section class="column-right" aria-label="Blocked Target & Focus Tools">
+
+        <div class="action-card-panel">
+          <!-- 1. Intercepted Blocked Content Card -->
+          <div class="blocked-target-card" id="blockedContentCard" role="region" aria-label="Blocked Content Summary">
+            <div class="target-card-left">
+              <div class="site-icon-box" id="targetSiteIconBox" aria-hidden="true">
+                <!-- Red YouTube Badge by Default -->
+                <svg class="youtube-svg-icon" id="youtubeBadgeSvg" width="28" height="28" viewBox="0 0 24 24"
+                  fill="none">
+                  <rect width="24" height="24" rx="6" fill="#EF4444" />
+                  <polygon points="10 8 16 12 10 16" fill="#FFFFFF" />
+                </svg>
+                <!-- Fallback Shield Icon -->
+                <svg class="shield-svg-icon" id="genericBadgeSvg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" style="display:none;">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+              </div>
+              <div class="target-text-wrap">
+                <span class="target-label-sub">Blocked Content</span>
+                <span class="target-title-main" id="blockedTitle" title="Target title">Loading title...</span>
+                <span class="target-meta-line" id="blockedMetaText">YouTube • Likely entertainment</span>
+              </div>
+            </div>
+            <a href="#" id="blockedTargetLink" class="target-external-link" target="_blank" rel="noopener noreferrer"
+              title="Inspect blocked link destination" aria-label="Inspect target destination">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <line x1="10" y1="14" x2="21" y2="3"></line>
+              </svg>
+            </a>
+          </div>
+
+          <!-- Active Pass Banner (Displayed when a pass is running) -->
+          <div id="activePassBanner" class="active-pass-banner" style="display: none;">
+            <div class="active-pass-info">
+              <span class="pulse-dot"></span>
+              <span>Pass Active: <strong id="activePassTimeRemaining">--:--</strong> on <span
+                  id="activePassDomain">Site</span></span>
+            </div>
+            <button type="button" id="earlySealBtn" class="btn-seal"
+              title="Seal early (< 3m) to earn a Discipline Win and refund your pass!">
+              🔒 Re-Lock Now
+            </button>
+          </div>
+
+          <!-- 2. Primary Action: Return to Work (Large Gold Pill Button) -->
+          <button type="button" id="closeTabBtn" class="btn-primary-return"
+            title="Close this tab immediately and return to deep work (Esc or Enter)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>Return to Work</span>
+          </button>
+
+          <!-- 3. Section Title: FOCUS TOOLS -->
+          <div class="section-label-row">
+            <span class="section-label-text">FOCUS TOOLS</span>
+          </div>
+
+          <!-- 4. Focus Tools 3-Card Grid -->
+          <div class="focus-tools-grid" role="group" aria-label="Mindfulness and Focus Interventions">
+            <!-- Tool 1: Pomodoro -->
+            <button type="button" class="tool-card" id="pomodoroBtn" title="Launch 25-minute Pomodoro deep work sprint">
+              <div class="tool-card-icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="13" r="8"></circle>
+                  <path d="M12 9v4l2 2"></path>
+                  <path d="M5 3L2 6"></path>
+                  <path d="M22 6l-3-3"></path>
+                  <path d="M12 2v3"></path>
+                </svg>
+              </div>
+              <span class="tool-card-name">Pomodoro</span>
+              <span class="tool-card-pill">
+                <span>25 min</span>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </span>
+            </button>
+
+            <!-- Tool 2: Square Breathing -->
+            <button type="button" class="tool-card" id="boxBreatheBtn"
+              title="Launch 4-4-4-4 box breathing to clear impulse craving">
+              <div class="tool-card-icon" aria-hidden="true">
+                <!-- Clean Lungs Icon -->
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 4v8"></path>
+                  <path d="M12 12c-2.5 0-4.5 2-4.5 4.5S9 20 12 20c-3.5 0-6-2.5-6-6 0-3 2-6 5.5-6.5"></path>
+                  <path d="M12 12c2.5 0 4.5 2 4.5 4.5S15 20 12 20c3.5 0 6-2.5 6-6 0-3-2-6-5.5-6.5"></path>
+                </svg>
+              </div>
+              <span class="tool-card-name">Square Breathing</span>
+              <span class="tool-card-pill">
+                <span>4-4-4-4</span>
+              </span>
+            </button>
+
+            <!-- Tool 3: Dhikr -->
+            <button type="button" class="tool-card" id="breatheBtn" title="Launch 100-second Dhikr remembrance reset">
+              <div class="tool-card-icon" aria-hidden="true">
+                <!-- Tasbeeh Beads Icon -->
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="4" r="1.5"></circle>
+                  <circle cx="17.5" cy="6.5" r="1.5"></circle>
+                  <circle cx="20" cy="12" r="1.5"></circle>
+                  <circle cx="17.5" cy="17.5" r="1.5"></circle>
+                  <circle cx="12" cy="20" r="1.5"></circle>
+                  <circle cx="6.5" cy="17.5" r="1.5"></circle>
+                  <circle cx="4" cy="12" r="1.5"></circle>
+                  <circle cx="6.5" cy="6.5" r="1.5"></circle>
+                  <path d="M12 20v2.5M12 22.5l-2 1M12 22.5l2 1"></path>
+                </svg>
+              </div>
+              <span class="tool-card-name">Dhikr</span>
+              <span class="tool-card-pill">
+                <span>100x</span>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </span>
+            </button>
+          </div>
+
+          <!-- 5. Bottom Utility 2-Card Row: Allow this Video & Use a Pass -->
+          <div class="utility-actions-row">
+            <!-- Utility 1: Allow this Video (YouTube Educational Only) -->
+            <button type="button" class="utility-card" id="allowVideoBtn"
+              title="Allow this specific video to watch mindfully">
+              <div class="utility-card-icon" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polygon points="10 8 16 12 10 16"></polygon>
+                </svg>
+              </div>
+              <div class="utility-card-text">
+                <span class="utility-card-title">Allow this Video</span>
+                <span class="utility-card-sub">Open once, stay mindful</span>
+              </div>
+            </button>
+
+            <!-- Utility 2: Use an Intentional Pass -->
+            <button type="button" class="utility-card" id="tempPassBtn"
+              title="Request a conscious, quota-limited intentional pass">
+              <div class="utility-card-icon" aria-hidden="true">
+                <!-- Ticket / Pass Icon -->
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path
+                    d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z">
+                  </path>
+                  <line x1="13" y1="5" x2="13" y2="19" stroke-dasharray="2 2"></line>
+                </svg>
+              </div>
+              <div class="utility-card-text">
+                <div class="utility-title-with-badge">
+                  <span class="utility-card-title">Use a Pass</span>
+                  <span class="pass-count-badge" id="passBadge">2 left</span>
+                </div>
+                <span class="utility-card-sub">Skip the block (limited)</span>
+              </div>
+            </button>
+          </div>
+
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- ===================================================================== -->
+    <!-- INTERACTIVE MODAL DIALOGS                                            -->
+    <!-- ===================================================================== -->
+
+    <!-- MODAL 1: Native 100-Second Dhikr & Reflection Modal Dialog -->
+    <dialog id="breatheModal" class="breathe-dialog" closedby="any" aria-labelledby="breatheInstruction">
+      <form method="dialog" class="breathe-modal-inner">
+        <progress id="breatheProgress" value="0" max="100" class="sr-only"
+          aria-label="Dhikr reflection progress"></progress>
+
+        <!-- Track Selector: Sacred Tasbeeh (1st) & Prophetic Duas (2nd) -->
+        <div class="breathe-nav-bar" role="tablist" aria-label="Remembrance tracks">
+          <button type="button" class="track-pill active" id="trackTasbeehBtn" role="tab" aria-selected="true"
+            data-track="tasbeeh">
+            Sacred Tasbeeh (100s)
+          </button>
+          <button type="button" class="track-pill" id="trackDuasBtn" role="tab" aria-selected="false" data-track="duas">
+            Prophetic Duas (100s)
+          </button>
+        </div>
+
+        <div class="breathe-ring-container">
+          <div class="breathe-ring" id="breatheCircle" aria-hidden="true">
+            <svg class="breathe-svg-ring" viewBox="0 0 140 140">
+              <circle class="ring-bg" cx="70" cy="70" r="58" />
+              <circle class="ring-progress" id="ringProgress" cx="70" cy="70" r="58" />
+            </svg>
+            <span class="countdown-number" id="countdownNumber" aria-live="polite">100</span>
+          </div>
+        </div>
+
+        <div class="breathe-content">
+          <span class="breathe-phase-badge" id="breathePhase">Remembrance 1 of 5 • 20s</span>
+          <h2 id="breatheInstruction" class="breathe-dhikr-ar" lang="ar" dir="rtl">سُبْحَانَ اللَّهِ</h2>
+          <p id="breatheTranslit" class="breathe-dhikr-translit">SubhanAllah</p>
+          <p id="breatheMeaning" class="breathe-dhikr-meaning">Glory be to Allah</p>
+          <p id="breathePrompt" class="breathe-guide">Declare Allah free of all imperfection and detach from transient
+            distraction.</p>
+        </div>
+
+        <div class="breathe-modal-actions">
+          <button type="button" id="extendTimerBtn" class="btn-secondary-sm" title="Add 60 seconds to your reflection">
+            +60s Extend
+          </button>
+          <button type="submit" value="cancel" id="stopBreatheBtn" class="btn btn-tertiary">
+            Finish Early
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- MODAL 2: Native Square / Box Breathing Modal Dialog (4-4-4-4) -->
+    <dialog id="boxBreathingModal" class="breathe-dialog" closedby="any" aria-labelledby="boxBreatheInstruction">
+      <form method="dialog" class="breathe-modal-inner">
+        <div class="breathe-nav-bar">
+          <span class="track-pill active" style="cursor: default;">
+            Square / Box Breathing (4-4-4-4 Technique)
+          </span>
+        </div>
+
+        <div class="box-breathing-container" aria-hidden="true">
+          <div class="box-visual-frame" id="boxFrame">
+            <div class="box-guide-dot" id="boxDot"></div>
+            <div class="box-inner-pulse" id="boxInnerPulse">
+              <span class="box-countdown-number" id="boxCountdownNumber">4</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="breathe-content">
+          <span class="breathe-phase-badge" id="boxPhaseBadge">Cycle 1 of 4 • Inhale</span>
+          <h2 id="boxBreatheInstruction" class="breathe-dhikr-translit" style="font-size: 1.5rem; color: #f59e0b;">
+            Inhale Deeply
+          </h2>
+          <p id="boxBreatheSub" class="breathe-guide">
+            Breathe in through your nose, expanding your diaphragm (4s).
+          </p>
+        </div>
+
+        <div class="breathe-modal-actions">
+          <button type="button" id="extendBoxBtn" class="btn-secondary-sm" title="Add another 4-stage breathing cycle">
+            +1 Cycle
+          </button>
+          <button type="submit" value="cancel" id="stopBoxBtn" class="btn btn-tertiary">
+            Finish Early
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- MODAL 3: Native Pomodoro Focus Sprint Modal Dialog (25m Deep Work) -->
+    <dialog id="pomodoroModal" class="breathe-dialog" closedby="any" aria-labelledby="pomodoroHeading">
+      <form method="dialog" class="breathe-modal-inner">
+        <div class="breathe-nav-bar">
+          <span class="track-pill active" style="cursor: default;">
+            🍅 Pomodoro Deep Work Engine
+          </span>
+        </div>
+
+        <div class="pomodoro-goal-box">
+          <label for="pomodoroTaskInput" class="sr-only">Sprint Goal</label>
+          <input type="text" id="pomodoroTaskInput" class="pomodoro-input"
+            placeholder="What single task will you finish in this sprint?" maxlength="100" />
+        </div>
+
+        <div class="breathe-ring-container">
+          <div class="breathe-ring" id="pomodoroCircle" aria-hidden="true">
+            <svg class="breathe-svg-ring" viewBox="0 0 140 140">
+              <circle class="ring-bg" cx="70" cy="70" r="58" />
+              <circle class="ring-progress pomodoro-ring" id="pomodoroRingProgress" cx="70" cy="70" r="58" />
+            </svg>
+            <span class="countdown-number" id="pomodoroTimerDisplay" style="font-size: 1.6rem;"
+              aria-live="polite">25:00</span>
+          </div>
+        </div>
+
+        <div class="breathe-content">
+          <span class="breathe-phase-badge" id="pomodoroPhaseBadge">Focus Session • 25 Minutes</span>
+          <h2 id="pomodoroHeading" class="breathe-dhikr-translit" style="font-size: 1.25rem; color: #f59e0b;">
+            Single-Task Deep Work
+          </h2>
+          <p id="pomodoroSubText" class="breathe-guide">
+            Put your phone away. Close extra tabs. Work with unbroken attention until the chime.
+          </p>
+        </div>
+
+        <div class="breathe-modal-actions">
+          <button type="button" id="pomodoroToggleBtn" class="btn btn-primary"
+            style="padding: 6px 16px; font-size: 0.82rem;">
+            Start Focus
+          </button>
+          <button type="button" id="pomodoroExtendBtn" class="btn-secondary-sm" title="Add 5 minutes to sprint">
+            +5m
+          </button>
+          <button type="button" id="pomodoroResetBtn" class="btn-secondary-sm" title="Reset back to 25 minutes">
+            Reset
+          </button>
+          <button type="submit" value="cancel" id="stopPomodoroBtn" class="btn btn-tertiary">
+            Close
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- MODAL 4: Native Intentional Dopamine Pass Modal Dialog (Hybrid Model) -->
+    <dialog id="passModal" class="breathe-dialog" closedby="any" aria-labelledby="passModalHeading">
+      <form method="dialog" class="breathe-modal-inner" id="passForm">
+        <div class="breathe-nav-bar">
+          <span class="track-pill active" style="cursor: default;">
+            ⏱️ Intentional Dopamine Pass
+          </span>
+        </div>
+
+        <div class="pass-quota-card">
+          <div class="quota-stat">
+            <span class="quota-label">Daily Passes Remaining</span>
+            <span class="quota-val" id="modalDailyRemaining">2 of 2</span>
+          </div>
+          <div class="quota-stat">
+            <span class="quota-label">Discipline Wins (Sealed Early)</span>
+            <span class="quota-val gold" id="modalDisciplineWins">0</span>
+          </div>
+        </div>
+
+        <!-- Duration Options -->
+        <div class="pass-duration-selector">
+          <label class="duration-option active" id="durOption5">
+            <input type="radio" name="passDuration" value="5" checked style="display:none;">
+            <span class="dur-title">⚡ 5 Minutes</span>
+            <span class="dur-sub">Quick task, message or code</span>
+          </label>
+          <label class="duration-option" id="durOption10">
+            <input type="radio" name="passDuration" value="10" style="display:none;">
+            <span class="dur-title">☕ 10 Minutes</span>
+            <span class="dur-sub">Standard conscious break</span>
+          </label>
+        </div>
+
+        <!-- Early Seal Refund Incentive Note -->
+        <div class="early-seal-hint">
+          <span>🏆 <strong>Discipline Refund:</strong> Finish & re-lock within 3 minutes? Your pass is <strong>100%
+              refunded</strong>!</span>
+        </div>
+
+        <!-- Required Commitment Intent -->
+        <div class="pass-reason-box">
+          <label for="passReasonInput" class="pass-reason-label">
+            Specific Reason for Unlocking <span style="color:#ef4444;">*</span>:
+          </label>
+          <input type="text" id="passReasonInput" class="pomodoro-input"
+            placeholder="e.g. Reply to client DM, check 2FA code, emergency notice" required minlength="3"
+            maxlength="120" />
+        </div>
+
+        <div class="breathe-modal-actions" style="margin-top: 14px;">
+          <!-- 10s Anti-Impulse Countdown Confirm Button -->
+          <button type="button" id="confirmPassBtn" class="btn btn-primary" disabled style="min-width: 170px;">
+            Pause & Reflect (10s)...
+          </button>
+          <button type="button" id="cancelPassBtn" class="btn btn-tertiary">
+            Cancel & Stay Focused
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+
+</html>
