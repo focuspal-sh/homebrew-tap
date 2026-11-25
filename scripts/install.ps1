@@ -54,7 +54,12 @@ Write-Host " OK ($pyVer)" -ForegroundColor Green
 
 # 2. Install uiautomation dependency
 Write-Host "Installing Windows UI Automation dependency (uiautomation)..." -NoNewline
-$null = python -m pip install --quiet --upgrade uiautomation --no-warn-script-location 2>&1
+$prevEAP = $ErrorActionPreference
+$ErrorActionPreference = "SilentlyContinue"
+try {
+    Start-Process -FilePath "python.exe" -ArgumentList "-m", "pip", "install", "--quiet", "--upgrade", "uiautomation", "--no-warn-script-location" -NoNewWindow -Wait
+} catch {}
+$ErrorActionPreference = $prevEAP
 Write-Host " OK" -ForegroundColor Green
 
 # 3. Determine Source Directory
