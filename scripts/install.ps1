@@ -61,14 +61,14 @@ if (-not $pythonPath) {
     Write-Host "Please install Python 3 from https://www.python.org/downloads/ (ensure 'Add Python to PATH' is checked) or run: winget install Python.Python.3.12" -ForegroundColor Yellow
     exit 1
 }
-$pyVer = & python --version 2>&1
+$pyVer = (python --version 2>&1)
 Write-Host " OK ($pyVer)" -ForegroundColor Green
 
 # 2. Check / Install uiautomation dependency
 Write-Host "• Installing Windows UI Automation dependency (uiautomation)..." -NoNewline
-& python -m pip install --quiet --upgrade uiautomation 2>$null
+python -m pip install --quiet --upgrade uiautomation 2>$null
 if ($LASTEXITCODE -ne 0) {
-    & python -m pip install --upgrade uiautomation
+    python -m pip install --upgrade uiautomation
 }
 Write-Host " OK" -ForegroundColor Green
 
@@ -77,7 +77,15 @@ $ScriptPath = $MyInvocation.MyCommand.Path
 if ($ScriptPath) {
     $SourceDir = (Resolve-Path (Join-Path (Split-Path $ScriptPath -Parent) "..")).Path
 } else {
-    $SourceDir = Get-Location
+    $SourceDir = (Get-Location).Path
+}
+
+if (-not (Test-Path "$SourceDir\daemon\guardian.py")) {
+    Write-Host "Error: Focus Pal source files not found in $SourceDir." -ForegroundColor Red
+    Write-Host "Please run this script from inside the cloned Focus Pal folder:" -ForegroundColor Yellow
+    Write-Host "  cd focus-guardian" -ForegroundColor Yellow
+    Write-Host "  powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1" -ForegroundColor Yellow
+    exit 1
 }
 
 # 4. Copy files to %LOCALAPPDATA%\FocusPal
@@ -174,3 +182,4 @@ Write-Host "  focuspal test     - Run in interactive terminal console"
 Write-Host "  focuspal stop     - Stop the background service"
 Write-Host "  focuspal start    - Restart the background service"
 Write-Host ""
+

@@ -7,7 +7,7 @@ Complete installation, background service setup, and management guide for Window
 ## ⚡ Prerequisites
 
 Focus Pal on Windows requires **Python 3.10+**.
-If Python is not installed yet, open PowerShell and install it in one command:
+If Python is not installed yet, open PowerShell and install it:
 ```powershell
 winget install Python.Python.3.12
 ```
@@ -47,20 +47,32 @@ powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
 
 ---
 
-### Option 3: Manual Minimal Python Run (No installer)
+### Option 3: Manual Direct Run (Minimal)
 
-If you just want to run Focus Pal immediately without any installation:
+If you just want to run Focus Pal directly with Python without any installer:
 
 ```powershell
 # 1. Install UI Automation dependency
 pip install uiautomation
 
-# 2. Run in the foreground (watch live terminal logs)
+# 2. Run in interactive foreground mode (view live terminal logs)
 python daemon\guardian.py --foreground
 
 # Or run silently in the background (no console window)
 pythonw daemon\guardian.py
 ```
+
+> [!TIP]
+> **PowerShell Syntax Note ("The ampersand (&) character is not allowed"):**
+> Unlike Linux/Bash, Windows PowerShell 5.1 does not allow `&&` to chain commands or `&` to background a process.
+> * To chain commands in PowerShell, use a **semicolon (`;`)**:
+>   ```powershell
+>   pip install uiautomation ; python daemon\guardian.py
+>   ```
+> * To run in the background, use **`pythonw`** instead of appending `&`:
+>   ```powershell
+>   pythonw daemon\guardian.py
+>   ```
 
 ---
 
