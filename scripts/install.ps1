@@ -54,10 +54,7 @@ Write-Host " OK ($pyVer)" -ForegroundColor Green
 
 # 2. Install uiautomation dependency
 Write-Host "Installing Windows UI Automation dependency (uiautomation)..." -NoNewline
-python -m pip install --quiet --upgrade uiautomation 2>$null
-if ($LASTEXITCODE -ne 0) {
-    python -m pip install --upgrade uiautomation
-}
+$null = python -m pip install --quiet --upgrade uiautomation --no-warn-script-location 2>&1
 Write-Host " OK" -ForegroundColor Green
 
 # 3. Determine Source Directory
@@ -69,11 +66,13 @@ if ($ScriptPath) {
 }
 
 if (-not (Test-Path "$SourceDir\daemon\guardian.py")) {
-    Write-Host "Error: Focus Pal source files not found in $SourceDir." -ForegroundColor Red
-    Write-Host "Please run this script from inside your Focus Pal directory:" -ForegroundColor Yellow
-    Write-Host "  cd focus-guardian" -ForegroundColor Yellow
-    Write-Host "  powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1" -ForegroundColor Yellow
-    exit 1
+    Write-Host "Downloading Focus Pal repository to $InstallDir..." -NoNewline
+    $ZipPath = "$env:TEMP\focus-guardian-main.zip"
+    $ExtractDir = "$env:TEMP\focus-guardian-main"
+    Invoke-WebRequest -Uri "https://github.com/ShireenAzadSyed/focus-guardian/archive/refs/heads/main.zip" -OutFile $ZipPath
+    Expand-Archive -Path $ZipPath -DestinationPath $ExtractDir -Force
+    $SourceDir = "$ExtractDir\focus-guardian-main"
+    Write-Host " OK" -ForegroundColor Green
 }
 
 # 4. Copy files to %LOCALAPPDATA%\FocusPal
