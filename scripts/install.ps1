@@ -1,4 +1,3 @@
-# Focus Pal Windows Installer
 param (
     [switch]$Uninstall
 )
