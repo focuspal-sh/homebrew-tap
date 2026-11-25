@@ -199,8 +199,8 @@ if (-not (Test-Path "$SourceDir\daemon\guardian.py")) {
     Write-Host ""
     Write-Host "Source files not found. Downloading FocusPal..." -ForegroundColor Yellow
 
-    $ZipPath = "$env:TEMP\focus-guardian-main.zip"
-    $ExtractDir = "$env:TEMP\focus-guardian-main"
+    $ZipPath = "$env:TEMP\focuspal-windows-runtime.zip"
+    $ExtractDir = "$env:TEMP\focuspal-windows-runtime"
 
     try {
 
@@ -209,7 +209,7 @@ if (-not (Test-Path "$SourceDir\daemon\guardian.py")) {
         }
 
         Invoke-WebRequest `
-            -Uri "https://github.com/ShireenAzadSyed/focus-guardian/archive/refs/heads/main.zip" `
+            -Uri "https://github.com/focuspal-sh/homebrew-tap/releases/download/v1.0.6/focuspal-windows-runtime.zip" `
             -OutFile $ZipPath `
             -UseBasicParsing
 
@@ -218,7 +218,7 @@ if (-not (Test-Path "$SourceDir\daemon\guardian.py")) {
             -DestinationPath $ExtractDir `
             -Force
 
-        $SourceDir = "$ExtractDir\focus-guardian-main"
+        $SourceDir = "$ExtractDir"
 
     }
     catch {
