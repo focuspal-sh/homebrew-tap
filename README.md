@@ -17,20 +17,17 @@ Open your Terminal and run:
 brew tap focuspal-sh/tap
 brew install focuspal
 
-# 2. Lock 24/7 background protection (Recommended)
-focuspal install-root
 ```
 
-> **💡 Why `install-root` is recommended:**
-> On modern macOS, standard background apps can be quit easily when cravings strike. Running `focuspal install-root` sets up Focus Pal as a protected system service that runs quietly in the background 24/7, restarts automatically if closed, and keeps you committed to your deep work.
->
-> *(If you prefer running without root privileges, run `focuspal install` instead).*
+### Enable one browser
 
-### 3. Verify Permissions
+Open a window in Chrome or Safari, then run:
+
 ```bash
 focuspal permissions
 ```
-*(macOS will prompt you once to allow Automation for your browsers — click **Allow**).*
+
+Focus Pal runs in your login session and verifies a test redirect before enabling browser protection.
 
 ---
 
@@ -66,12 +63,11 @@ Need to check an urgent message or grab a 2FA code?
 | Command | What it does |
 |---|---|
 | `focuspal status` | Check if Focus Pal is actively guarding in the background |
-| `focuspal install-root` | Lock as a tamper-resistant root daemon (Recommended) |
 | `focuspal install` | Install as standard user LaunchAgent |
 | `focuspal permissions` | Test and prompt all required macOS permissions |
 | `focuspal reload` | Instantly reload rules after changing config |
 | `focuspal test` | Run in foreground mode (see live blocks in terminal) |
-| `focuspal stop` | Pause protection (with a 30-second commitment pledge) |
+| `focuspal uninstall` | Remove the background service after confirmation |
 
 ---
 

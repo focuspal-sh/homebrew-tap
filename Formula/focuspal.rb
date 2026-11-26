@@ -1,12 +1,12 @@
 class Focuspal < Formula
   desc "Multi-browser distraction blocker & deep work companion for macOS"
   homepage "https://github.com/focuspal-sh/focuspal"
-  version "1.0.6"
+  version "1.0.7"
   license "MIT"
 
   if Hardware::CPU.arm?
-    url "https://github.com/focuspal-sh/homebrew-tap/releases/download/v1.0.6/focuspal-v1.0.6-arm64.tar.gz"
-    sha256 "795332f2bd13548ffea1e47e1fc2f772e4062c0f59b1db7a180e2c15ebdd27d4"
+    url "https://github.com/focuspal-sh/homebrew-tap/releases/download/v1.0.7/focuspal-v1.0.7-arm64.tar.gz"
+    sha256 "3739edffe3017dcf16ea6034655d5473091bd385f1743ff5bca8ea7585fb70a9"
   end
 
   head "https://github.com/ShireenAzadSyed/focus-guardian.git", branch: "main"
@@ -29,10 +29,11 @@ class Focuspal < Formula
           reload)  exec ./scripts/reload.sh ;;
           start)   shift; exec ./scripts/start.sh "$@" ;;
           test)    exec ./scripts/start.sh --foreground ;;
-          install-root) exec sudo ./scripts/install-root-daemon.sh ;;
-          stop|uninstall) exec ./scripts/uninstall.sh ;;
+          install-root) exec ./scripts/install-root-daemon.sh ;;
+          stop) echo "The stop command has been removed." >&2; exit 1 ;;
+          uninstall) exec ./scripts/uninstall.sh ;;
           *)
-            echo "Usage: focuspal {status|start|test|reload|permissions|install|install-root|stop}"
+            echo "Usage: focuspal {status|start|test|reload|permissions|install|uninstall}"
             ;;
         esac
       EOS
@@ -82,9 +83,6 @@ class Focuspal < Formula
     <<~EOS
       🤝 Focus Pal installed successfully!
 
-      Recommended Next Step (24/7 Tamper-Proof Protection):
-        focuspal install-root
-
       To verify & request macOS Automation permissions:
         focuspal permissions
 
@@ -94,8 +92,8 @@ class Focuspal < Formula
       To reload after a config change:
         focuspal reload
 
-      To attempt stopping (triggers commitment pledge):
-        focuspal stop
+      To remove the background service:
+        focuspal uninstall
     EOS
   end
 

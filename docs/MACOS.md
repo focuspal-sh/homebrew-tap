@@ -14,14 +14,9 @@ brew tap focuspal-sh/tap
 # 2. Install Focus Pal
 brew install focuspal
 
-# 3. Lock 24/7 background protection (Recommended)
-focuspal install-root
-
-# 4. Verify browser permissions
+# 3. Open a browser window, then enable protection
 focuspal permissions
 ```
-
-> **💡 Note:** Running `focuspal install-root` installs Focus Pal as a permanent background daemon in `/Library/LaunchDaemons/com.focuspal.rootdaemon.plist` (`root:wheel`). This ensures it runs 24/7 without being closed or killed in Activity Monitor. If you prefer running without root privileges, simply run `focuspal install`.
 
 ### Option 2: 1-Line Universal Curl Installer
 ```bash
@@ -36,13 +31,10 @@ curl -fsSL https://raw.githubusercontent.com/focuspal-sh/homebrew-tap/main/scrip
 # Check service health and running processes
 focuspal status
 
-# Lock daemon with root privileges (tamper-proof 24/7 protection)
-focuspal install-root
-
 # Install as standard user LaunchAgent
 focuspal install
 
-# Test and proactively prompt all macOS browser & notification permissions
+# Choose one browser and verify a test redirect
 focuspal permissions
 
 # Trigger in-place hot reload of rules and code (zero downtime)
@@ -54,9 +46,6 @@ focuspal start
 # Run in foreground test mode (view live tab intercepts in terminal)
 focuspal test
 
-# Attempt shutdown (triggers 3-stage anti-tamper confirmation shield)
-focuspal stop
-
 # Uninstall service
 focuspal uninstall
 ```
@@ -65,28 +54,24 @@ focuspal uninstall
 
 ## 🔒 macOS Permissions & Automation
 
-Focus Pal operates natively using AppleScript application dictionaries and OS UI introspection (`Google Chrome`, `Safari`, `Brave Browser`, `Arc`, `Mozilla Firefox`, `Microsoft Edge`, `Opera`, `Vivaldi`).
+Open a window in Chrome, Safari, or another browser with a compatible AppleScript tab interface. Then choose a browser interactively or provide its name.
 
-### Granting Automation Permissions:
-Run the built-in diagnostic and permission prompter:
 ```bash
 focuspal permissions
+focuspal permissions "Google Chrome"
 ```
-When first prompted by macOS:
-> *"Terminal / Focus Pal would like to control Google Chrome.app"*
 
-Click **OK** to allow Focus Pal to inspect active distraction tabs and redirect them.
+The running daemon requests Automation access for the selected browser and verifies it can read and redirect a dedicated test tab. Focus Pal saves the selection after the test succeeds. Each browser can be enabled separately. Firefox-family browsers use a different automation path and are outside this setup flow.
 
-If permissions need manual verification:
-1. Open **System Settings ➔ Privacy & Security ➔ Automation**.
-2. Ensure your terminal (or Python) has checkmarks enabled next to **System Events** and your installed web browsers.
-3. You can also run `focuspal permissions --open` to jump directly to this settings pane.
+Run `focuspal permissions --status` to see the configured browsers without prompting. If macOS denies access, use `focuspal permissions --open` to open Automation settings, then retry setup. Browser selections must be configured once when upgrading from a release that monitored every detected browser. If the daemon uses a custom HTTP port, set `FOCUSPAL_PORT` when running the permissions command.
 
 ---
 
-## 🛡️ Anti-Tamper Protection
+## Background service
 
-Running `focuspal install-root` installs Focus Pal under `/Library/LaunchDaemons/com.focuspal.rootdaemon.plist` owned by `root:wheel`. It automatically restarts if killed via Activity Monitor and cannot be terminated without root authorization.
+Focus Pal runs as a login-session LaunchAgent. The agent restarts if its process exits while the service is registered. Removing the service with `focuspal uninstall` requires a cooling-off period and confirmation.
+
+`install-root` is retired. If you previously installed the root service, run `focuspal uninstall` to remove it before switching to `focuspal install`, or upgrade using the macOS package. The package disables the legacy root service and installs a login agent.
 
 ---
 

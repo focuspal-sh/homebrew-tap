@@ -7,6 +7,30 @@ PROJECT_DIR="$(cd "$SCRIPT_DIR/.." 2>/dev/null && pwd || pwd)"
 OS_NAME="$(uname -s)"
 ARCH="$(uname -m)"
 
+if [ "$OS_NAME" = "Darwin" ]; then
+    if [ "$(id -u)" = "0" ]; then
+        echo "Run focuspal install from your macOS login session without sudo." >&2
+        exit 1
+    fi
+    domain="gui/$(id -u)"
+    for label in com.focuspal.rootdaemon com.focusguardian.rootdaemon; do
+        if launchctl print "system/$label" >/dev/null 2>&1; then
+            echo "A legacy root service is still running. Remove it with focuspal uninstall before installing the login agent." >&2
+            exit 1
+        fi
+    done
+    packaged_agent="/Library/LaunchAgents/com.focuspal.daemon.plist"
+    if [ "$PROJECT_DIR" = "/Library/Application Support/FocusPal" ] && [ -f "$packaged_agent" ]; then
+        launchctl enable "$domain/com.focuspal.daemon"
+        if ! launchctl print "$domain/com.focuspal.daemon" >/dev/null 2>&1; then
+            launchctl bootstrap "$domain" "$packaged_agent"
+        fi
+        launchctl kickstart "$domain/com.focuspal.daemon"
+        echo "Focus Pal is registered in your login session. Run focuspal permissions to enable a browser."
+        exit 0
+    fi
+fi
+
 # If invoked via `curl ... | bash` (no local bin/focuspal), locate existing install or download latest release
 if [ ! -f "$PROJECT_DIR/bin/focuspal" ]; then
     if [ -f "/opt/homebrew/opt/focuspal/libexec/bin/focuspal" ]; then
@@ -43,10 +67,6 @@ else:
         n = a['name'].lower()
         if n.endswith(f'-{arch}.tar.gz') and 'linux' not in n:
             url = a['browser_download_url']; break
-    if not url:
-        for a in assets:
-            if a['name'] == 'focuspal-linux-runtime.tar.gz':
-                url = a['browser_download_url']; break
 print(url)
 ")"
         if [ -z "$ASSET_URL" ]; then
@@ -134,6 +154,7 @@ EOF
 
     # 5. Load and start the LaunchAgent
     echo " • Registering with macOS launchd: $TARGET_PLIST"
+    launchctl enable "$domain/com.focuspal.daemon"
     launchctl load -w "$TARGET_PLIST"
     launchctl start com.focuspal.daemon
 
@@ -200,16 +221,13 @@ if [ "$LINKED" -eq 0 ]; then
     echo " • Linked: $HOME/.local/bin/focuspal"
 fi
 
-# 8. Verify and proactively request all required macOS permissions
-if [ "$(uname)" = "Darwin" ] && [ -f "$PROJECT_DIR/scripts/verify-permissions.sh" ]; then
-    echo ""
-    chmod +x "$PROJECT_DIR/scripts/verify-permissions.sh"
-    "$PROJECT_DIR/scripts/verify-permissions.sh"
+if [ "$(uname)" = "Darwin" ]; then
+    echo ' • Browser setup: Open a browser, then run focuspal permissions'
 fi
 
 echo "=========================================================="
 echo " ✅ Focus Pal successfully installed and started!"
-echo " • CLI Command:  focuspal {status|stop|reload|start|permissions}"
+echo " • CLI Command:  focuspal {status|uninstall|reload|start|permissions}"
 echo " • Web UI:       http://127.0.0.1:8989/blocked"
 echo " • View Logs:    tail -f $PROJECT_DIR/logs/guardian.log"
 echo "=========================================================="

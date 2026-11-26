@@ -39,10 +39,8 @@ systemctl --user start focuspal
 # Run in foreground interactive mode
 focuspal test
 
-# Stop service
-focuspal stop
-# or
-systemctl --user stop focuspal
+# Remove the registered Focus Pal service after confirmation
+focuspal uninstall
 ```
 
 ---
@@ -72,7 +70,7 @@ Focus Pal operates natively across both X11 and Wayland desktops for:
 
 ---
 
-## 🛡️ Anti-Tamper Protection
+## Background service
 
-Running `focuspal install-root` on Linux creates a system-wide root daemon in `/etc/systemd/system/focuspal.service`. Non-root users cannot kill or disable the service without `sudo` privileges.
+When installed as a systemd user service, Focus Pal restarts after its process exits. The user who owns the service can still manage it through systemd.
 

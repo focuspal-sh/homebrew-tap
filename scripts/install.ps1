@@ -3,6 +3,7 @@ param (
 )
 
 $ErrorActionPreference = "Stop"
+$InstallerPath = $PSCommandPath
 
 function Invoke-FocusPalInstaller {
 
@@ -21,8 +22,8 @@ if (-not (Test-IsAdmin)) {
     Write-Host "Administrator privileges are required to install/manage Focus Pal." -ForegroundColor Yellow
     Write-Host "Requesting elevation via UAC..." -ForegroundColor Cyan
 
-    $ElevatedArgs = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-NoExit")
-    $ScriptPath = $MyInvocation.MyCommand.Path
+    $ElevatedArgs = @("-NoProfile", "-ExecutionPolicy", "Bypass")
+    $ScriptPath = $InstallerPath
 
     if ($ScriptPath -and (Test-Path $ScriptPath)) {
         $ElevatedArgs += "-File", "`"$ScriptPath`""
@@ -70,6 +71,53 @@ $ConfigDir = "$InstallDir\config"
 $TaskName = "FocusPalDaemon"
 $StartupShortcut = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\FocusPal.lnk"
 
+$TaskPath = "\"
+$GuardianScript = Join-Path $InstallDir "daemon\guardian.py"
+
+function Get-FocusPalTask {
+    Get-ScheduledTask -TaskName $TaskName -TaskPath $TaskPath -ErrorAction SilentlyContinue
+}
+
+function Stop-LegacyFocusPalProcess {
+    # Earlier releases also launched pythonw outside Task Scheduler.
+    $GuardianPattern = '(?i)(?:^|[\s"])' + [regex]::Escape($GuardianScript) + '(?:"|\s|$)'
+    Get-CimInstance Win32_Process -Filter "Name='pythonw.exe' OR Name='python.exe'" |
+        Where-Object { $_.CommandLine -match $GuardianPattern } |
+        ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
+}
+
+function New-FocusPalScheduledTask {
+    param (
+        [string]$User,
+        [string]$PythonExecutable,
+        [string]$ScriptPath,
+        [string]$WorkingDirectory
+    )
+
+    $Action = New-ScheduledTaskAction -Execute $PythonExecutable -Argument ('"{0}"' -f $ScriptPath) `
+        -WorkingDirectory $WorkingDirectory
+    $Trigger = New-ScheduledTaskTrigger -AtLogOn -User $User
+    $Principal = New-ScheduledTaskPrincipal -UserId $User -LogonType Interactive -RunLevel Limited
+    $Settings = New-ScheduledTaskSettingsSet -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1) `
+        -MultipleInstances IgnoreNew -ExecutionTimeLimit ([TimeSpan]::Zero) `
+        -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
+
+    New-ScheduledTask -Action $Action -Trigger $Trigger -Principal $Principal -Settings $Settings
+}
+
+function Confirm-FocusPalUninstall {
+    Write-Host "Uninstall removes Focus Pal and its background task. Press Ctrl+C to cancel."
+    for ($Remaining = 30; $Remaining -gt 0; $Remaining--) {
+        Write-Progress -Activity "Uninstalling Focus Pal" -Status "$Remaining seconds until confirmation" `
+            -PercentComplete ((30 - $Remaining) * 100 / 30)
+        Start-Sleep -Seconds 1
+    }
+    Write-Progress -Activity "Uninstalling Focus Pal" -Completed
+
+    $Confirmation = Read-Host "Type UNINSTALL to remove Focus Pal and its background task"
+    return ($Confirmation -ceq "UNINSTALL")
+}
+
 Write-Host ""
 Write-Host "==========================================================" -ForegroundColor Cyan
 Write-Host "             Focus Pal - Windows Installer               " -ForegroundColor Cyan
@@ -82,31 +130,23 @@ Write-Host ""
 
 if ($Uninstall) {
 
+    if (-not (Confirm-FocusPalUninstall)) {
+        Write-Host "Uninstall cancelled."
+        $script:InstallerExitCode = 1; return
+    }
+
     Write-Host "==> Uninstalling Focus Pal..." -ForegroundColor Yellow
 
-    # Stop daemon using port 8989 or running guardian.py
-    try {
-        $Connections = Get-NetTCPConnection -LocalPort 8989 -State Listen -ErrorAction SilentlyContinue
-
-        if ($Connections) {
-            $Pids = $Connections.OwningProcess | Select-Object -Unique | Where-Object { $_ -gt 0 }
-
-            foreach ($ProcessId in $Pids) {
-                Stop-Process -Id $ProcessId -Force -ErrorAction SilentlyContinue
-            }
+    $Task = Get-FocusPalTask
+    if ($Task) {
+        $WasRunning = $Task.State -eq 'Running'
+        Disable-ScheduledTask -InputObject $Task | Out-Null
+        if ($WasRunning) {
+            Stop-ScheduledTask -TaskName $TaskName -TaskPath $TaskPath
         }
-
-        Get-CimInstance Win32_Process -Filter "Name='pythonw.exe'" -ErrorAction SilentlyContinue |
-            Where-Object { $_.CommandLine -like '*guardian.py*' } |
-            ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+        Unregister-ScheduledTask -TaskName $TaskName -TaskPath $TaskPath -Confirm:$false
     }
-    catch {}
-
-    # Remove scheduled task
-    try {
-        schtasks /delete /tn $TaskName /f 2>$null | Out-Null
-    }
-    catch {}
+    Stop-LegacyFocusPalProcess
 
     # Remove startup shortcut
     if (Test-Path $StartupShortcut) {
@@ -240,7 +280,7 @@ catch {
 
 Write-Host "[4/8] Locating FocusPal source files..." -NoNewline
 
-$ScriptPath = $MyInvocation.MyCommand.Path
+$ScriptPath = $InstallerPath
 
 if ($ScriptPath) {
 
@@ -307,21 +347,11 @@ Write-Host "[5/8] Deploying FocusPal files..." -NoNewline
 
 try {
 
-    # Stop any existing FocusPal daemon before replacing files (supports clean in-place updates)
-    try {
-        $Connections = Get-NetTCPConnection -LocalPort 8989 -State Listen -ErrorAction SilentlyContinue
-        if ($Connections) {
-            $Pids = $Connections.OwningProcess | Select-Object -Unique | Where-Object { $_ -gt 0 }
-            foreach ($ProcessId in $Pids) {
-                Stop-Process -Id $ProcessId -Force -ErrorAction SilentlyContinue
-            }
-        }
-        Get-CimInstance Win32_Process -Filter "Name='pythonw.exe'" -ErrorAction SilentlyContinue |
-            Where-Object { $_.CommandLine -like '*guardian.py*' } |
-            ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
-        Start-Sleep -Milliseconds 300
+    $Task = Get-FocusPalTask
+    if ($Task -and $Task.State -eq 'Running') {
+        Stop-ScheduledTask -TaskName $TaskName -TaskPath $TaskPath
     }
-    catch {}
+    Stop-LegacyFocusPalProcess
 
     New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
     New-Item -ItemType Directory -Force -Path $BinDir | Out-Null
@@ -330,15 +360,22 @@ try {
     New-Item -ItemType Directory -Force -Path "$InstallDir\daemon" | Out-Null
     New-Item -ItemType Directory -Force -Path "$InstallDir\server" | Out-Null
 
-    Copy-Item -Recurse -Force "$SourceDir\daemon\*" "$InstallDir\daemon\"
-    Copy-Item -Recurse -Force "$SourceDir\server\*" "$InstallDir\server\"
+    if ((Resolve-Path $SourceDir).Path -ne (Resolve-Path $InstallDir).Path) {
+        Copy-Item -Recurse -Force "$SourceDir\daemon\*" "$InstallDir\daemon\"
+        Copy-Item -Recurse -Force "$SourceDir\server\*" "$InstallDir\server\"
 
-    if (Test-Path "$SourceDir\config") {
-        Copy-Item -Recurse -Force "$SourceDir\config\*" "$InstallDir\config\"
-    }
+        if (Test-Path "$SourceDir\config") {
+            Copy-Item -Recurse -Force "$SourceDir\config\*" "$InstallDir\config\"
+        }
 
-    if (Test-Path "$SourceDir\bin\focuspal.cmd") {
-        Copy-Item -Force "$SourceDir\bin\focuspal.cmd" "$BinDir\focuspal.cmd"
+        if (Test-Path "$SourceDir\bin\focuspal.cmd") {
+            Copy-Item -Force "$SourceDir\bin\focuspal.cmd" "$BinDir\focuspal.cmd"
+        }
+
+        $BundledInstaller = Join-Path $SourceDir "scripts\install.ps1"
+        if (Test-Path $BundledInstaller) {
+            Copy-Item -Force $BundledInstaller (Join-Path $ScriptsDir "install.ps1")
+        }
     }
 
 }
@@ -415,8 +452,6 @@ if (-not (Test-Path $PythonW)) {
     $script:InstallerExitCode = 1; return
 }
 
-$GuardianScript = "$InstallDir\daemon\guardian.py"
-
 if (-not (Test-Path $GuardianScript)) {
 
     Write-Host " FAILED" -ForegroundColor Red
@@ -427,17 +462,10 @@ if (-not (Test-Path $GuardianScript)) {
 
 try {
 
-    $TaskAction = "`"$PythonW`" `"$GuardianScript`""
-
-    schtasks /create `
-        /tn $TaskName `
-        /tr $TaskAction `
-        /sc onlogon `
-        /f | Out-Null
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to create scheduled task."
-    }
+    $CurrentUser = [Security.Principal.WindowsIdentity]::GetCurrent().Name
+    $Definition = New-FocusPalScheduledTask -User $CurrentUser -PythonExecutable $PythonW `
+        -ScriptPath $GuardianScript -WorkingDirectory $InstallDir
+    Register-ScheduledTask -TaskName $TaskName -TaskPath $TaskPath -InputObject $Definition -Force | Out-Null
 
 }
 catch {
@@ -458,51 +486,34 @@ Write-Host "[8/8] Starting FocusPal background daemon..." -NoNewline
 
 try {
 
-    # Avoid starting another instance if the server is already running
-    $AlreadyRunning = $false
+    Start-ScheduledTask -TaskName $TaskName -TaskPath $TaskPath
+    $Running = $false
 
-    try {
-        $null = Invoke-RestMethod `
-            -Uri "http://127.0.0.1:8989/api/status" `
-            -TimeoutSec 2
-
-        $AlreadyRunning = $true
+    for ($Attempt = 0; $Attempt -lt 10; $Attempt++) {
+        Start-Sleep -Seconds 1
+        if ((Get-FocusPalTask).State -ne 'Running') {
+            continue
+        }
+        try {
+            $Response = Invoke-RestMethod -Uri "http://127.0.0.1:8989/api/status" -TimeoutSec 2
+            if ($Response.status -eq 'running' -and $Response.service -eq 'Focus Pal') {
+                $Running = $true
+                break
+            }
+        }
+        catch {
+            # Give the registered task time to bind its local HTTP server.
+        }
     }
-    catch {}
-
-    if (-not $AlreadyRunning) {
-
-        Start-Process `
-            -FilePath $PythonW `
-            -ArgumentList "`"$GuardianScript`"" `
-            -WorkingDirectory "$InstallDir\daemon" `
-            -WindowStyle Hidden
-
+    if (-not $Running) {
+        throw "Focus Pal did not become ready. Check the FocusPalDaemon task and $InstallDir\logs\guardian.log."
     }
-
-    Start-Sleep -Seconds 3
-
-    try {
-
-        $Response = Invoke-RestMethod `
-            -Uri "http://127.0.0.1:8989/api/status" `
-            -TimeoutSec 5
-
-        Write-Host " RUNNING" -ForegroundColor Green
-
-    }
-    catch {
-
-        Write-Host " STARTED (verification pending)" -ForegroundColor Yellow
-
-    }
-
+    Write-Host " RUNNING" -ForegroundColor Green
 }
 catch {
-
     Write-Host " FAILED" -ForegroundColor Red
     Write-Host $_.Exception.Message -ForegroundColor Red
-
+    $script:InstallerExitCode = 1; return
 }
 
 # ----------------------------------------------------------
@@ -530,9 +541,8 @@ Write-Host ""
 Write-Host "Available commands:" -ForegroundColor Cyan
 Write-Host "  focuspal status    - Check health and server status"
 Write-Host "  focuspal test      - Run interactive terminal console"
-Write-Host "  focuspal reload    - Hot-reload rules and code"
+Write-Host "  focuspal reload    - Restart the task to reload rules and code"
 Write-Host "  focuspal update    - Update Focus Pal to latest release"
-Write-Host "  focuspal stop      - Stop background service"
 Write-Host "  focuspal start     - Restart background service"
 Write-Host "  focuspal uninstall - Remove Focus Pal from Windows"
 

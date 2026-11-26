@@ -282,11 +282,9 @@ To eliminate impulsive quitting during moments of dopamine craving:
 2. **30-Second Cooling-Off Delay:** Forces an un-skippable 30-second pause to break the limbic dopamine urge.
 3. **Cognitive Typing Pledge:** Requires typing `"I choose distraction over my future"` to confirm shutdown.
 
-### 5.2. System-Level Root Lock
-When locked with `focuspal install-root`:
-- Installs to `/Library/LaunchDaemons/com.focuspal.rootdaemon.plist` with ownership `root:wheel` (`chmod 644`).
-- Standard user accounts in Activity Monitor or terminal cannot quit or kill the process without root authentication (`sudo`).
-- If terminated, macOS `launchd` (`KeepAlive: true`) resurrects the process in less than 1 second.
+### 5.2. macOS Login Agent
+
+On macOS, the engine runs in the user's GUI session as a LaunchAgent. The packaged agent lives in `/Library/LaunchAgents`, and source installs use `~/Library/LaunchAgents`. With `KeepAlive` enabled, launchd restarts the process if it exits while the service is registered.
 
 ### 5.3. Application Security Hardening
 - **Path Traversal Protection:** Static file requests canonicalize paths via `os.path.realpath` to prevent directory traversal (`../`).
@@ -330,7 +328,7 @@ focuspal/
 │       └── app.js                     # Mode switcher, Dhikr, Box Breathing, and Pomodoro engine
 ├── scripts/
 │   ├── install.sh                     # Service installer & PATH symlinker
-│   ├── install-root-daemon.sh         # Root system daemon locker (tamper-proof)
+│   ├── install-root-daemon.sh         # Compatibility command for retired root setup
 │   ├── uninstall.sh                   # Friction-protected uninstaller with confirmation popup
 │   ├── status.sh                      # Service health & process checker
 │   ├── reload.sh                      # Hot-reload trigger script
@@ -365,7 +363,7 @@ curl -fsSL https://raw.githubusercontent.com/focuspal-sh/focuspal/main/install.s
 ```bash
 brew tap focuspal-sh/tap
 brew install focuspal
-focuspal install-root    # Recommended: locks 24/7 background protection
+focuspal install         # Register the macOS login agent
 focuspal permissions     # Verify browser Automation permissions
 ```
 
@@ -377,5 +375,5 @@ cd focuspal
 ```
 
 ### 4. Enterprise MDM Deployment (Jamf Pro, Kandji, Intune)
-Focus Pal provides full enterprise fleet management support via native macOS `.pkg` installers, root system LaunchDaemons, and silent PPPC (TCC) profiles.
+Focus Pal provides full enterprise fleet management support via native macOS `.pkg` installers, login-session LaunchAgents, and silent PPPC (TCC) profiles.
 See the full specification in **[Enterprise & MDM Deployment Guide](docs/ENTERPRISE_MDM.md)**.

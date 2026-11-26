@@ -10,7 +10,7 @@ Traditional browser extensions fail in enterprise environments because employees
 
 **Focus Pal solves this natively:**
 * **Zero Browser Extensions:** Operates at the OS layer across Safari, Google Chrome, Arc, Brave, Microsoft Edge, and Firefox simultaneously.
-* **100% Tamper-Resistant:** Installs as a root system LaunchDaemon (`/Library/LaunchDaemons/com.focuspal.rootdaemon.plist`). Standard (non-admin) user accounts cannot terminate, pause, or uninstall the service.
+* **Login-session protection:** Installs a root-owned LaunchAgent that runs as the logged-in user and restarts after an unexpected exit.
 * **100% Offline & Private:** Binds strictly to `127.0.0.1:8989`. Zero telemetry, zero analytics, and zero data leaving the employee's machine (compliant with GDPR, HIPAA, and SOC 2 requirements).
 * **Single Native Binary:** Self-contained Mach-O binary (`focuspal-engine`) with zero external runtime or Python dependencies.
 
@@ -22,7 +22,7 @@ Focus Pal is distributed as pre-compiled, self-contained binaries. IT administra
 
 | Asset | Location / Download | Purpose |
 |---|---|---|
-| **Enterprise Installer (`.pkg`)** | **[FocusPal-v1.0.6.pkg](https://github.com/focuspal-sh/homebrew-tap/releases)** | Pre-compiled native macOS installer. Places the binary in `/usr/local/bin` and registers the root LaunchDaemon. |
+| **Enterprise Installer (`.pkg`)** | **[FocusPal-v1.0.6.pkg](https://github.com/focuspal-sh/homebrew-tap/releases)** | Pre-compiled native macOS installer. Places the binary in `/usr/local/bin` and installs the login-session LaunchAgent. |
 | **Silent TCC Profile (`.mobileconfig`)** | **[`com.focuspal.tcc.mobileconfig`](com.focuspal.tcc.mobileconfig)** | Upload directly to Jamf / Kandji / Intune to silently pre-approve browser automation (zero user dialogs). |
 
 ---
@@ -33,7 +33,7 @@ Focus Pal is distributed as pre-compiled, self-contained binaries. IT administra
 ┌──────────────────────────────────────────────┐       ┌──────────────────────────────────────────────┐
 │       1. Upload Pre-built .pkg to MDM        │       │       2. Upload .mobileconfig to MDM         │
 │  Jamf/Intune distributes FocusPal.pkg        │ ────► │  Jamf/Intune pushes silent TCC policy        │
-│  (Installs binary & starts root LaunchDaemon)│       │  (Employees see ZERO permission pop-ups)     │
+│  (Installs binary and starts login agent)   │       │  (Employees see ZERO permission pop-ups)     │
 └──────────────────────────────────────────────┘       └──────────────────────────────────────────────┘
 ```
 
@@ -49,8 +49,10 @@ Focus Pal is distributed as pre-compiled, self-contained binaries. IT administra
 
 **What the PKG does automatically upon deployment:**
 - Installs the standalone compiled engine to `/usr/local/bin/focuspal-engine` and CLI to `/usr/local/bin/focuspal`.
-- Creates `/Library/LaunchDaemons/com.focuspal.rootdaemon.plist` with `root:wheel` permissions.
-- Automatically bootstraps the background service so it starts protecting immediately without requiring a user reboot.
+- Installs the root-owned plist at `/Library/LaunchAgents/com.focuspal.daemon.plist`. Starts it for the current console user if a GUI session is available. Otherwise, it loads at the next login.
+- Disables the legacy Focus Pal root service on upgrade.
+- Supplies package defaults from `/Library/Application Support/FocusPal/config`. Files in the current user's `~/.focuspal/config` take precedence.
+- Users enable each browser with `focuspal permissions`, even when an MDM profile has already authorized Automation.
 
 ---
 

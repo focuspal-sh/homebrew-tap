@@ -88,21 +88,22 @@ focuspal status
 # Test in interactive console mode (view live interceptions)
 focuspal test
 
-# Hot-reload configuration and safe harbor rules
+# Restart the task to apply configuration changes
 focuspal reload
 
 # Start background service
 focuspal start
 
-# Stop background service
-focuspal stop
-
 # Update Focus Pal to the latest release (Windows equivalent of `brew upgrade focuspal`)
 focuspal update
 
-# Uninstall Focus Pal completely
+# Uninstall Focus Pal after a 30-second wait and typed confirmation
 focuspal uninstall
 ```
+
+Task Scheduler starts Focus Pal at sign-in and makes up to three restart attempts, one minute apart, after a failure. The task runs in the signed-in user’s session and keeps running on battery power. To use the updated task settings with an existing installation, run the updated installer. Use `focuspal uninstall` to remove the task after the cooldown.
+
+For a maintainer check, run **Release Focus Pal** in GitHub Actions with **Publish the bundles and update the public tap** unchecked. The Windows job validates the packaged task definition, the removed `stop` command, and uninstall confirmation on a Windows runner.
 
 ---
 
