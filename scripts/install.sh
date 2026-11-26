@@ -2,8 +2,37 @@
 # Focus Pal - Universal macOS Background Service Installer
 set -e
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd || pwd)"
+PROJECT_DIR="$(cd "$SCRIPT_DIR/.." 2>/dev/null && pwd || pwd)"
+
+# If invoked via `curl ... | bash` (no local bin/focuspal), locate existing install or download latest release
+if [ ! -f "$PROJECT_DIR/bin/focuspal" ]; then
+    if [ -f "/opt/homebrew/opt/focuspal/libexec/bin/focuspal" ]; then
+        PROJECT_DIR="/opt/homebrew/opt/focuspal/libexec"
+    elif [ -f "/usr/local/opt/focuspal/libexec/bin/focuspal" ]; then
+        PROJECT_DIR="/usr/local/opt/focuspal/libexec"
+    elif [ -f "/Library/Application Support/FocusPal/bin/focuspal" ]; then
+        PROJECT_DIR="/Library/Application Support/FocusPal"
+    else
+        ARCH="$(uname -m)"
+        INSTALL_ROOT="$HOME/.focuspal/app"
+        mkdir -p "$INSTALL_ROOT"
+        echo " • Fetching latest Focus Pal release for macOS ($ARCH)..."
+        ASSET_URL="$(curl -fsSL "https://api.github.com/repos/focuspal-sh/homebrew-tap/releases/latest" \
+            | python3 -c "import sys, json; data = json.load(sys.stdin); arch = '$ARCH'; assets = [a['browser_download_url'] for a in data.get('assets', []) if a['name'].endswith(f'-{arch}.tar.gz')]; print(assets[0] if assets else '')")"
+        if [ -z "$ASSET_URL" ]; then
+            echo "❌ Could not find a macOS ($ARCH) release asset on focuspal-sh/homebrew-tap."
+            echo "   Try Homebrew instead: brew tap focuspal-sh/tap && brew install focuspal"
+            exit 1
+        fi
+        TMP_TGZ="/tmp/focuspal-latest.tar.gz"
+        curl -fsSL "$ASSET_URL" -o "$TMP_TGZ"
+        rm -rf "${INSTALL_ROOT:?}"/*
+        tar -xzf "$TMP_TGZ" -C "$INSTALL_ROOT" --strip-components=1
+        rm -f "$TMP_TGZ"
+        PROJECT_DIR="$INSTALL_ROOT"
+    fi
+fi
 
 LAUNCH_AGENTS_DIR="$HOME/Library/LaunchAgents"
 PLIST_NAME="com.focuspal.daemon.plist"
