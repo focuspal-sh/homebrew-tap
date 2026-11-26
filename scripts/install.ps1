@@ -4,6 +4,64 @@ param (
 
 $ErrorActionPreference = "Stop"
 
+function Invoke-FocusPalInstaller {
+
+# ----------------------------------------------------------
+# 0. ENSURE ADMINISTRATOR PRIVILEGES
+# ----------------------------------------------------------
+
+function Test-IsAdmin {
+    $CurrentIdentity = [Security.Principal.WindowsIdentity]::GetCurrent()
+    $Principal = New-Object Security.Principal.WindowsPrincipal($CurrentIdentity)
+    return $Principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
+
+if (-not (Test-IsAdmin)) {
+    Write-Host ""
+    Write-Host "Administrator privileges are required to install/manage Focus Pal." -ForegroundColor Yellow
+    Write-Host "Requesting elevation via UAC..." -ForegroundColor Cyan
+
+    $ElevatedArgs = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-NoExit")
+    $ScriptPath = $MyInvocation.MyCommand.Path
+
+    if ($ScriptPath -and (Test-Path $ScriptPath)) {
+        $ElevatedArgs += "-File", "`"$ScriptPath`""
+        if ($Uninstall) {
+            $ElevatedArgs += "-Uninstall"
+        }
+    }
+    else {
+        # Running via web installer (irm ... | iex): persist to temp file so elevated PowerShell can run it
+        $TempInstaller = Join-Path $env:TEMP "focuspal-install.ps1"
+        try {
+            Invoke-WebRequest `
+                -Uri "https://raw.githubusercontent.com/focuspal-sh/homebrew-tap/main/scripts/install.ps1" `
+                -OutFile $TempInstaller `
+                -UseBasicParsing
+        }
+        catch {
+            Write-Host "Failed to download installer for elevated execution: $($_.Exception.Message)" -ForegroundColor Red
+            Write-Host "Please open PowerShell as Administrator and run the command again." -ForegroundColor Yellow
+            $script:InstallerExitCode = 1; return
+        }
+        $ElevatedArgs += "-File", "`"$TempInstaller`""
+        if ($Uninstall) {
+            $ElevatedArgs += "-Uninstall"
+        }
+    }
+
+    try {
+        $Proc = Start-Process -FilePath "powershell.exe" -ArgumentList $ElevatedArgs -Verb RunAs -Wait -PassThru
+        $script:InstallerExitCode = $Proc.ExitCode; return
+    }
+    catch {
+        Write-Host ""
+        Write-Host "Elevation was cancelled or failed: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "Please right-click PowerShell, select 'Run as administrator', and run the installer again." -ForegroundColor Yellow
+        $script:InstallerExitCode = 1; return
+    }
+}
+
 $AppName = "FocusPal"
 $InstallDir = "$env:LOCALAPPDATA\FocusPal"
 $BinDir = "$InstallDir\bin"
@@ -26,17 +84,21 @@ if ($Uninstall) {
 
     Write-Host "==> Uninstalling Focus Pal..." -ForegroundColor Yellow
 
-    # Stop daemon using port 8989
+    # Stop daemon using port 8989 or running guardian.py
     try {
-        $Connections = Get-NetTCPConnection -LocalPort 8989 -ErrorAction SilentlyContinue
+        $Connections = Get-NetTCPConnection -LocalPort 8989 -State Listen -ErrorAction SilentlyContinue
 
         if ($Connections) {
-            $Pids = $Connections.OwningProcess | Select-Object -Unique
+            $Pids = $Connections.OwningProcess | Select-Object -Unique | Where-Object { $_ -gt 0 }
 
             foreach ($ProcessId in $Pids) {
                 Stop-Process -Id $ProcessId -Force -ErrorAction SilentlyContinue
             }
         }
+
+        Get-CimInstance Win32_Process -Filter "Name='pythonw.exe'" -ErrorAction SilentlyContinue |
+            Where-Object { $_.CommandLine -like '*guardian.py*' } |
+            ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
     }
     catch {}
 
@@ -60,7 +122,7 @@ if ($Uninstall) {
     Write-Host "Focus Pal uninstalled successfully." -ForegroundColor Green
     Write-Host ""
 
-    exit 0
+    $script:InstallerExitCode = 0; return
 }
 
 # ----------------------------------------------------------
@@ -79,7 +141,7 @@ if (-not $PythonCommand) {
     Write-Host "Install Python using:" -ForegroundColor Yellow
     Write-Host "winget install Python.Python.3.12" -ForegroundColor Cyan
 
-    exit 1
+    $script:InstallerExitCode = 1; return
 }
 
 $PythonExe = $PythonCommand.Source
@@ -94,7 +156,7 @@ try {
 catch {
     Write-Host " FAILED" -ForegroundColor Red
     Write-Host $_.Exception.Message -ForegroundColor Red
-    exit 1
+    $script:InstallerExitCode = 1; return
 }
 
 Write-Host " OK ($PythonVersion)" -ForegroundColor Green
@@ -169,7 +231,7 @@ catch {
     Write-Host " FAILED" -ForegroundColor Red
     Write-Host $_.Exception.Message -ForegroundColor Red
 
-    exit 1
+    $script:InstallerExitCode = 1; return
 }
 
 # ----------------------------------------------------------
@@ -226,12 +288,12 @@ if (-not (Test-Path "$SourceDir\daemon\guardian.py")) {
         Write-Host " FAILED" -ForegroundColor Red
         Write-Host $_.Exception.Message -ForegroundColor Red
 
-        exit 1
+        $script:InstallerExitCode = 1; return
     }
 
     if (-not (Test-Path "$SourceDir\daemon\guardian.py")) {
         Write-Host "Repository structure is invalid." -ForegroundColor Red
-        exit 1
+        $script:InstallerExitCode = 1; return
     }
 }
 
@@ -269,7 +331,7 @@ catch {
     Write-Host " FAILED" -ForegroundColor Red
     Write-Host $_.Exception.Message -ForegroundColor Red
 
-    exit 1
+    $script:InstallerExitCode = 1; return
 }
 
 Write-Host " OK" -ForegroundColor Green
@@ -316,7 +378,7 @@ catch {
     Write-Host " FAILED" -ForegroundColor Red
     Write-Host $_.Exception.Message -ForegroundColor Red
 
-    exit 1
+    $script:InstallerExitCode = 1; return
 }
 
 Write-Host " OK" -ForegroundColor Green
@@ -334,7 +396,7 @@ if (-not (Test-Path $PythonW)) {
     Write-Host " FAILED" -ForegroundColor Red
     Write-Host "pythonw.exe was not found at $PythonW" -ForegroundColor Red
 
-    exit 1
+    $script:InstallerExitCode = 1; return
 }
 
 $GuardianScript = "$InstallDir\daemon\guardian.py"
@@ -344,7 +406,7 @@ if (-not (Test-Path $GuardianScript)) {
     Write-Host " FAILED" -ForegroundColor Red
     Write-Host "guardian.py was not found." -ForegroundColor Red
 
-    exit 1
+    $script:InstallerExitCode = 1; return
 }
 
 try {
@@ -367,7 +429,7 @@ catch {
     Write-Host " FAILED" -ForegroundColor Red
     Write-Host $_.Exception.Message -ForegroundColor Red
 
-    exit 1
+    $script:InstallerExitCode = 1; return
 }
 
 Write-Host " OK" -ForegroundColor Green
@@ -463,3 +525,10 @@ Write-Host ""
 Write-Host "NOTE: Open a NEW PowerShell window to use the updated PATH." -ForegroundColor Yellow
 
 Write-Host ""
+}
+
+$script:InstallerExitCode = 0
+Invoke-FocusPalInstaller
+if ($MyInvocation.MyCommand.Path) {
+    exit $script:InstallerExitCode
+}

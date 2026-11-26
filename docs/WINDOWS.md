@@ -19,10 +19,11 @@ winget install Python.Python.3.12
 
 ### Option 1: 1-Line PowerShell Web Installer (Recommended)
 
-Open **PowerShell** and run (`irm` fetches the raw script and executes it):
+Open **PowerShell as Administrator** (right-click Start → *Terminal (Admin)* or *Windows PowerShell (Admin)*) and run (`irm` fetches the raw script and executes it):
 ```powershell
 irm https://raw.githubusercontent.com/focuspal-sh/homebrew-tap/main/scripts/install.ps1 | iex
 ```
+*(If run from a standard PowerShell window, the installer will automatically prompt for Administrator elevation via UAC.)*
 
 **What this does automatically:**
 1. Installs the Windows UI Automation library (`uiautomation`).
@@ -35,7 +36,7 @@ irm https://raw.githubusercontent.com/focuspal-sh/homebrew-tap/main/scripts/inst
 
 ### Option 2: Run Directly from Cloned Repository
 
-If you cloned or downloaded the Focus Pal repository:
+If you cloned or downloaded the Focus Pal repository, open **PowerShell as Administrator**:
 
 ```powershell
 # 1. Navigate to the repository
@@ -126,8 +127,8 @@ Unlike macOS, Windows does **not** prompt the user with permission dialogs:
 
 ## 🗑️ Uninstallation
 
-To remove Focus Pal from Windows at any time:
+To remove Focus Pal from Windows at any time (works from any directory):
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1 -Uninstall
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/focuspal-sh/homebrew-tap/main/scripts/install.ps1))) -Uninstall
 ```
-*(Or remove the `FocusPalDaemon` task in Windows Task Scheduler and delete `%LOCALAPPDATA%\FocusPal`).*
+*(Or, if running from a cloned repository: `powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1 -Uninstall`)*
