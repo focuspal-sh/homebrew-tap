@@ -4,6 +4,8 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd || pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." 2>/dev/null && pwd || pwd)"
+OS_NAME="$(uname -s)"
+ARCH="$(uname -m)"
 
 # If invoked via `curl ... | bash` (no local bin/focuspal), locate existing install or download latest release
 if [ ! -f "$PROJECT_DIR/bin/focuspal" ]; then
@@ -13,22 +15,52 @@ if [ ! -f "$PROJECT_DIR/bin/focuspal" ]; then
         PROJECT_DIR="/usr/local/opt/focuspal/libexec"
     elif [ -f "/Library/Application Support/FocusPal/bin/focuspal" ]; then
         PROJECT_DIR="/Library/Application Support/FocusPal"
+    elif [ -f "$HOME/.focuspal/app/bin/focuspal" ] && [ -z "${FOCUSPAL_FORCE_DOWNLOAD:-}" ]; then
+        PROJECT_DIR="$HOME/.focuspal/app"
     else
-        ARCH="$(uname -m)"
         INSTALL_ROOT="$HOME/.focuspal/app"
         mkdir -p "$INSTALL_ROOT"
-        echo " • Fetching latest Focus Pal release for macOS ($ARCH)..."
+        echo " • Fetching latest Focus Pal release for $OS_NAME ($ARCH)..."
         ASSET_URL="$(curl -fsSL "https://api.github.com/repos/focuspal-sh/homebrew-tap/releases/latest" \
-            | python3 -c "import sys, json; data = json.load(sys.stdin); arch = '$ARCH'; assets = [a['browser_download_url'] for a in data.get('assets', []) if a['name'].endswith(f'-{arch}.tar.gz')]; print(assets[0] if assets else '')")"
+            | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+os_name = '$OS_NAME'.lower()
+arch = '$ARCH'.lower()
+assets = data.get('assets', [])
+url = ''
+if os_name == 'linux':
+    for a in assets:
+        n = a['name'].lower()
+        if f'linux-{arch}.tar.gz' in n:
+            url = a['browser_download_url']; break
+    if not url:
+        for a in assets:
+            if a['name'] == 'focuspal-linux-runtime.tar.gz':
+                url = a['browser_download_url']; break
+else:
+    for a in assets:
+        n = a['name'].lower()
+        if n.endswith(f'-{arch}.tar.gz') and 'linux' not in n:
+            url = a['browser_download_url']; break
+    if not url:
+        for a in assets:
+            if a['name'] == 'focuspal-linux-runtime.tar.gz':
+                url = a['browser_download_url']; break
+print(url)
+")"
         if [ -z "$ASSET_URL" ]; then
-            echo "❌ Could not find a macOS ($ARCH) release asset on focuspal-sh/homebrew-tap."
-            echo "   Try Homebrew instead: brew tap focuspal-sh/tap && brew install focuspal"
+            echo "❌ Could not find a release asset for $OS_NAME ($ARCH) on focuspal-sh/homebrew-tap."
             exit 1
         fi
         TMP_TGZ="/tmp/focuspal-latest.tar.gz"
         curl -fsSL "$ASSET_URL" -o "$TMP_TGZ"
         rm -rf "${INSTALL_ROOT:?}"/*
-        tar -xzf "$TMP_TGZ" -C "$INSTALL_ROOT" --strip-components=1
+        if tar -tzf "$TMP_TGZ" | grep -q '^bin/focuspal$'; then
+            tar -xzf "$TMP_TGZ" -C "$INSTALL_ROOT"
+        else
+            tar -xzf "$TMP_TGZ" -C "$INSTALL_ROOT" --strip-components=1
+        fi
         rm -f "$TMP_TGZ"
         PROJECT_DIR="$INSTALL_ROOT"
     fi
@@ -52,28 +84,30 @@ echo " • Project Dir:     $PROJECT_DIR"
 # 2. Ensure log directory exists
 mkdir -p "$PROJECT_DIR/logs"
 
-# 3. Stop and unload any existing service
-if launchctl list | grep -q "com.focuspal.daemon"; then
-    echo " • Unloading existing Focus Pal service..."
-    launchctl unload "$TARGET_PLIST" 2>/dev/null || true
-fi
-if launchctl list | grep -q "com.focusguardian.daemon"; then
-    echo " • Unloading legacy service..."
-    launchctl unload "$LAUNCH_AGENTS_DIR/com.focusguardian.daemon.plist" 2>/dev/null || true
-fi
+# 3. Register OS background service
+if [ "$OS_NAME" = "Darwin" ]; then
+    # Stop and unload any existing service
+    if launchctl list | grep -q "com.focuspal.daemon"; then
+        echo " • Unloading existing Focus Pal service..."
+        launchctl unload "$TARGET_PLIST" 2>/dev/null || true
+    fi
+    if launchctl list | grep -q "com.focusguardian.daemon"; then
+        echo " • Unloading legacy service..."
+        launchctl unload "$LAUNCH_AGENTS_DIR/com.focusguardian.daemon.plist" 2>/dev/null || true
+    fi
 
-# 4. Generate dynamic LaunchAgent plist
-mkdir -p "$LAUNCH_AGENTS_DIR"
-if [ -x "$PROJECT_DIR/bin/focuspal-engine" ]; then
-    PROGRAM_ARGS="        <string>$PROJECT_DIR/bin/focuspal-engine</string>"
-elif [ -x "$PROJECT_DIR/bin/focus-guardian-engine" ]; then
-    PROGRAM_ARGS="        <string>$PROJECT_DIR/bin/focus-guardian-engine</string>"
-else
-    PROGRAM_ARGS="        <string>$PYTHON_BIN</string>
+    # 4. Generate dynamic LaunchAgent plist
+    mkdir -p "$LAUNCH_AGENTS_DIR"
+    if [ -x "$PROJECT_DIR/bin/focuspal-engine" ]; then
+        PROGRAM_ARGS="        <string>$PROJECT_DIR/bin/focuspal-engine</string>"
+    elif [ -x "$PROJECT_DIR/bin/focus-guardian-engine" ]; then
+        PROGRAM_ARGS="        <string>$PROJECT_DIR/bin/focus-guardian-engine</string>"
+    else
+        PROGRAM_ARGS="        <string>$PYTHON_BIN</string>
         <string>$PROJECT_DIR/daemon/guardian.py</string>"
-fi
+    fi
 
-cat <<EOF > "$TARGET_PLIST"
+    cat <<EOF > "$TARGET_PLIST"
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -98,17 +132,49 @@ $PROGRAM_ARGS
 </plist>
 EOF
 
-# 5. Load and start the LaunchAgent
-echo " • Registering with macOS launchd: $TARGET_PLIST"
-launchctl load -w "$TARGET_PLIST"
-launchctl start com.focuspal.daemon
+    # 5. Load and start the LaunchAgent
+    echo " • Registering with macOS launchd: $TARGET_PLIST"
+    launchctl load -w "$TARGET_PLIST"
+    launchctl start com.focuspal.daemon
 
-# 6. Verify service is active
-sleep 1
-if launchctl list | grep -q "com.focuspal.daemon"; then
-    echo " • launchd Status:  ACTIVE (Auto-restarts if killed)"
+    # 6. Verify service is active
+    sleep 1
+    if launchctl list | grep -q "com.focuspal.daemon"; then
+        echo " • launchd Status:  ACTIVE (Auto-restarts if killed)"
+    else
+        echo " • Warning: Service registered. Checking process..."
+    fi
 else
-    echo " • Warning: Service registered. Checking process..."
+    # Linux systemd user service (fallback to background script if no systemd user session)
+    if command -v systemctl >/dev/null 2>&1 && systemctl --user status >/dev/null 2>&1; then
+        SYSTEMD_DIR="$HOME/.config/systemd/user"
+        mkdir -p "$SYSTEMD_DIR"
+        if [ -x "$PROJECT_DIR/bin/focuspal-engine" ]; then
+            EXEC_START="$PROJECT_DIR/bin/focuspal-engine"
+        else
+            EXEC_START="$PYTHON_BIN $PROJECT_DIR/daemon/guardian.py"
+        fi
+        cat <<EOF > "$SYSTEMD_DIR/focuspal.service"
+[Unit]
+Description=Focus Pal Distraction Blocker Daemon
+After=graphical-session.target
+
+[Service]
+Type=simple
+WorkingDirectory=$PROJECT_DIR
+ExecStart=$EXEC_START
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=default.target
+EOF
+        systemctl --user daemon-reload
+        systemctl --user enable --now focuspal
+        echo " • systemd Status:  ACTIVE (~/.config/systemd/user/focuspal.service)"
+    elif [ -x "$PROJECT_DIR/scripts/start.sh" ]; then
+        "$PROJECT_DIR/scripts/start.sh"
+    fi
 fi
 
 # 7. Symlink focuspal CLI to system PATH
