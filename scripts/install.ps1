@@ -271,7 +271,7 @@ if (-not (Test-Path "$SourceDir\daemon\guardian.py")) {
         }
 
         Invoke-WebRequest `
-            -Uri "https://github.com/focuspal-sh/homebrew-tap/releases/download/v1.0.6/focuspal-windows-runtime.zip" `
+            -Uri "https://github.com/focuspal-sh/homebrew-tap/releases/latest/download/focuspal-windows-runtime.zip" `
             -OutFile $ZipPath `
             -UseBasicParsing
 
