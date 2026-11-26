@@ -49,7 +49,7 @@ Focus Pal is distributed as pre-compiled, self-contained binaries. IT administra
 
 **What the PKG does automatically upon deployment:**
 - Installs the standalone compiled engine to `/usr/local/bin/focuspal-engine` and CLI to `/usr/local/bin/focuspal`.
-- Installs the root-owned plist at `/Library/LaunchAgents/com.focuspal.daemon.plist`. Starts it for the current console user if a GUI session is available. Otherwise, it loads at the next login.
+- Installs the root-owned plist at `/Library/LaunchAgents/com.focuspal.daemon.plist`. It loads at the next login. An interactive `focuspal install-root` run activates it in the current session after installation.
 - Disables the legacy Focus Pal root service on upgrade.
 - Supplies package defaults from `/Library/Application Support/FocusPal/config`. Files in the current user's `~/.focuspal/config` take precedence.
 - Users enable each browser with `focuspal permissions`, even when an MDM profile has already authorized Automation.

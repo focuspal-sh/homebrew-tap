@@ -21,11 +21,7 @@ if [ "$OS_NAME" = "Darwin" ]; then
     done
     packaged_agent="/Library/LaunchAgents/com.focuspal.daemon.plist"
     if [ "$PROJECT_DIR" = "/Library/Application Support/FocusPal" ] && [ -f "$packaged_agent" ]; then
-        launchctl enable "$domain/com.focuspal.daemon"
-        if ! launchctl print "$domain/com.focuspal.daemon" >/dev/null 2>&1; then
-            launchctl bootstrap "$domain" "$packaged_agent"
-        fi
-        launchctl kickstart "$domain/com.focuspal.daemon"
+        "$SCRIPT_DIR/activate-package.sh"
         echo "Focus Pal is registered in your login session. Run focuspal permissions to enable a browser."
         exit 0
     fi
