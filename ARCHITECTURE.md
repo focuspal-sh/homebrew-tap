@@ -328,7 +328,6 @@ focuspal/
 │       └── app.js                     # Mode switcher, Dhikr, Box Breathing, and Pomodoro engine
 ├── scripts/
 │   ├── install.sh                     # Service installer & PATH symlinker
-│   ├── install-root-daemon.sh         # Compatibility command for retired root setup
 │   ├── uninstall.sh                   # Friction-protected uninstaller with confirmation popup
 │   ├── status.sh                      # Service health & process checker
 │   ├── reload.sh                      # Hot-reload trigger script

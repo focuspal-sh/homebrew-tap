@@ -6,7 +6,7 @@ class Focuspal < Formula
 
   if Hardware::CPU.arm?
     url "https://github.com/focuspal-sh/homebrew-tap/releases/download/v1.0.7/focuspal-v1.0.7-arm64.tar.gz"
-    sha256 "3739edffe3017dcf16ea6034655d5473091bd385f1743ff5bca8ea7585fb70a9"
+    sha256 "e46255d5fc8c4eb6850fcebb56e71f12e1270d226a67f0495e54a439b79ff705"
   end
 
   head "https://github.com/ShireenAzadSyed/focus-guardian.git", branch: "main"
@@ -26,14 +26,15 @@ class Focuspal < Formula
           status)  exec ./scripts/status.sh ;;
           permissions|perms|check) shift; exec ./scripts/verify-permissions.sh "$@" ;;
           install) exec ./scripts/install.sh ;;
+          install-root) shift; exec ./scripts/install-admin.sh "$@" ;;
           reload)  exec ./scripts/reload.sh ;;
           start)   shift; exec ./scripts/start.sh "$@" ;;
           test)    exec ./scripts/start.sh --foreground ;;
-          install-root) exec ./scripts/install-root-daemon.sh ;;
           stop) echo "The stop command has been removed." >&2; exit 1 ;;
           uninstall) exec ./scripts/uninstall.sh ;;
           *)
-            echo "Usage: focuspal {status|start|test|reload|permissions|install|uninstall}"
+            echo "Usage: focuspal {status|start|test|reload|permissions|install|install-root|uninstall}"
+            [ -z "$1" ] || exit 1
             ;;
         esac
       EOS
