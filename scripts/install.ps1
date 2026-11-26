@@ -307,6 +307,22 @@ Write-Host "[5/8] Deploying FocusPal files..." -NoNewline
 
 try {
 
+    # Stop any existing FocusPal daemon before replacing files (supports clean in-place updates)
+    try {
+        $Connections = Get-NetTCPConnection -LocalPort 8989 -State Listen -ErrorAction SilentlyContinue
+        if ($Connections) {
+            $Pids = $Connections.OwningProcess | Select-Object -Unique | Where-Object { $_ -gt 0 }
+            foreach ($ProcessId in $Pids) {
+                Stop-Process -Id $ProcessId -Force -ErrorAction SilentlyContinue
+            }
+        }
+        Get-CimInstance Win32_Process -Filter "Name='pythonw.exe'" -ErrorAction SilentlyContinue |
+            Where-Object { $_.CommandLine -like '*guardian.py*' } |
+            ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+        Start-Sleep -Milliseconds 300
+    }
+    catch {}
+
     New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
     New-Item -ItemType Directory -Force -Path $BinDir | Out-Null
     New-Item -ItemType Directory -Force -Path $ScriptsDir | Out-Null
@@ -512,10 +528,13 @@ Write-Host "  $GuardianScript"
 
 Write-Host ""
 Write-Host "Available commands:" -ForegroundColor Cyan
-Write-Host "  focuspal status   - Check health and server status"
-Write-Host "  focuspal test     - Run interactive terminal console"
-Write-Host "  focuspal stop     - Stop background service"
-Write-Host "  focuspal start    - Restart background service"
+Write-Host "  focuspal status    - Check health and server status"
+Write-Host "  focuspal test      - Run interactive terminal console"
+Write-Host "  focuspal reload    - Hot-reload rules and code"
+Write-Host "  focuspal update    - Update Focus Pal to latest release"
+Write-Host "  focuspal stop      - Stop background service"
+Write-Host "  focuspal start     - Restart background service"
+Write-Host "  focuspal uninstall - Remove Focus Pal from Windows"
 
 Write-Host ""
 Write-Host "To uninstall FocusPal:" -ForegroundColor Yellow

@@ -6,7 +6,7 @@ class Focuspal < Formula
 
   if Hardware::CPU.arm?
     url "https://github.com/focuspal-sh/homebrew-tap/releases/download/v1.0.6/focuspal-v1.0.6-arm64.tar.gz"
-    sha256 "016cbaf948893860714ef793ea15040ecf2ddbea8b590bca40ed9da04d97c7bf"
+    sha256 "c79721cb09c74abfaa4e9e6f25196e82272e1d5db2f19393188456dd3d851e80"
   end
 
   head "https://github.com/ShireenAzadSyed/focus-guardian.git", branch: "main"

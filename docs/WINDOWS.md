@@ -96,6 +96,12 @@ focuspal start
 
 # Stop background service
 focuspal stop
+
+# Update Focus Pal to the latest release (Windows equivalent of `brew upgrade focuspal`)
+focuspal update
+
+# Uninstall Focus Pal completely
+focuspal uninstall
 ```
 
 ---
@@ -127,8 +133,11 @@ Unlike macOS, Windows does **not** prompt the user with permission dialogs:
 
 ## 🗑️ Uninstallation
 
-To remove Focus Pal from Windows at any time (works from any directory):
+To remove Focus Pal from Windows at any time, run:
+```powershell
+focuspal uninstall
+```
+*(Or, if `focuspal` is not in PATH, run from any PowerShell window:)*
 ```powershell
 & ([scriptblock]::Create((irm https://raw.githubusercontent.com/focuspal-sh/homebrew-tap/main/scripts/install.ps1))) -Uninstall
 ```
-*(Or, if running from a cloned repository: `powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1 -Uninstall`)*
