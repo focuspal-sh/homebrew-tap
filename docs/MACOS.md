@@ -63,7 +63,7 @@ focuspal permissions "Google Chrome"
 
 The running daemon requests Automation access for the selected browser and verifies it can read and redirect a dedicated test tab. Focus Pal saves the selection after the test succeeds. Each browser can be enabled separately. Firefox-family browsers use a different automation path and are outside this setup flow.
 
-If the agent is offline, `focuspal permissions` starts the regular login agent before setup. Run `focuspal permissions --status` to check status without starting the agent or prompting. If macOS denies access, use `focuspal permissions --open` to open Automation settings, then retry setup. Browser selections must be configured once when upgrading from a release that monitored every detected browser. If the daemon uses a custom HTTP port, set `FOCUSPAL_PORT` when running the permissions command.
+If the agent is offline, start it before running `focuspal permissions`. Run `focuspal permissions --status` to check status without starting the agent or prompting. If macOS denies access, use `focuspal permissions --open` to open Automation settings, then retry setup. Browser selections must be configured once when upgrading from a release that monitored every detected browser. If the daemon uses a custom HTTP port, set `FOCUSPAL_PORT` when running the permissions command.
 
 ---
 
@@ -71,7 +71,7 @@ If the agent is offline, `focuspal permissions` starts the regular login agent b
 
 Focus Pal runs as a login-session LaunchAgent. The agent restarts if its process exits while the service is registered. Removing the service with `focuspal uninstall` requires a cooling-off period and confirmation.
 
-For an administrator-owned installation, open Chrome or Safari and run `focuspal install-root` from your regular macOS account. The macOS installer asks for administrator access to install the package. Focus Pal then guides you through Automation approval for one browser from your login session. You can also name a browser with `focuspal install-root "Google Chrome"`.
+For an administrator-owned installation, open Chrome or Safari and run `focuspal install-root` from your regular macOS account. The macOS installer asks for administrator access to install the package. Then run `focuspal permissions` to approve browser Automation from your login session. You can also use `focuspal permissions "Google Chrome"`.
 
 The package disables legacy Focus Pal root services before starting the login agent.
 

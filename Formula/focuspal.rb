@@ -1,12 +1,12 @@
 class Focuspal < Formula
   desc "Multi-browser distraction blocker & deep work companion for macOS"
   homepage "https://github.com/focuspal-sh/focuspal"
-  version "1.0.7"
+  version "1.0.8"
   license "MIT"
 
   if Hardware::CPU.arm?
-    url "https://github.com/focuspal-sh/homebrew-tap/releases/download/v1.0.7/focuspal-v1.0.7-arm64.tar.gz"
-    sha256 "da2b81c33a38ea8eeae9604151d2e850211b012b10c754baea865b8e714845fd"
+    url "https://github.com/focuspal-sh/homebrew-tap/releases/download/v1.0.8/focuspal-v1.0.8-arm64.tar.gz"
+    sha256 "bbf2d9c062d637eb4943ee4f9893c4244563dc7b30cd87ab26c1a70cac81f254"
   end
 
   head "https://github.com/ShireenAzadSyed/focus-guardian.git", branch: "main"
