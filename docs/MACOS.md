@@ -25,7 +25,7 @@ focuspal permissions
 
 ### Option 2: 1-Line Universal Curl Installer
 ```bash
-curl -fsSL https://raw.githubusercontent.com/focuspal-sh/focuspal/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/focuspal-sh/homebrew-tap/main/scripts/install.sh | bash
 ```
 
 ---
